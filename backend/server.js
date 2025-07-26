@@ -7,6 +7,7 @@ const communityRoutes = require("./routes/community");
 const orderRoutes = require("./routes/orders");
 const mandiRoutes = require("./routes/mandi");
 const marketRatesRoutes = require("./routes/market-rates");
+const testMarketplaceRoutes = require("./routes/test-marketplace");
 
 const app = express();
 app.use(cors());
@@ -19,6 +20,7 @@ app.use("/api/community", communityRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/mandi", mandiRoutes);
 app.use("/api/market-rates", marketRatesRoutes);
+app.use("/api", testMarketplaceRoutes);
 
 // Health check endpoint
 app.get("/", (req, res) => {

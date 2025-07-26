@@ -12,19 +12,49 @@ function VendorMarketplace() {
 
   useEffect(() => {
     fetchMarketplaceItems();
+    // Set up interval to refresh marketplace items every 30 seconds
+    const interval = setInterval(fetchMarketplaceItems, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   const fetchMarketplaceItems = async () => {
+    setLoading(true);
     try {
-      const response = await fetch("http://localhost:5000/api/inventory");
+      // Use the new marketplace-specific endpoint
+      const url = new URL("http://localhost:5000/api/inventory/marketplace");
+
+      // Add filters if any
+      if (searchTerm) {
+        url.searchParams.append("search", searchTerm);
+      }
+      if (selectedCategory) {
+        url.searchParams.append("category", selectedCategory);
+      }
+
+      const response = await fetch(url);
       if (response.ok) {
         const data = await response.json();
-        setItems(data.filter((item) => item.quantity > 0)); // Only show available items
+        setItems(data);
+        console.log(
+          `🛒 Loaded ${data.length} marketplace items from suppliers`
+        );
+      } else {
+        console.error(
+          "Failed to fetch marketplace items:",
+          response.statusText
+        );
       }
     } catch (error) {
-      console.error("Error fetching items:", error);
+      console.error("Error fetching marketplace items:", error);
+    } finally {
+      setLoading(false);
     }
   };
+
+  // Refresh items when search or category changes
+  useEffect(() => {
+    fetchMarketplaceItems();
+  }, [searchTerm, selectedCategory]);
 
   const addToCart = (item, quantity) => {
     const existingItem = cart.find((cartItem) => cartItem.id === item.id);

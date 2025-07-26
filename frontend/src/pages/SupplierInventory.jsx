@@ -68,8 +68,13 @@ function SupplierInventory() {
       });
 
       if (response.ok) {
-        const newItemResponse = await response.json();
-        setItems([...items, newItemResponse]);
+        const responseData = await response.json();
+        console.log("✅ Item added to inventory:", responseData);
+
+        // Refresh the supplier's items list
+        await fetchSupplierItems();
+
+        // Reset form
         setNewItem({
           name: "",
           category: "",
@@ -80,6 +85,11 @@ function SupplierInventory() {
           minOrder: "",
         });
         setShowAddForm(false);
+
+        // Show success message with sync info
+        alert(
+          `✅ Item "${itemData.name}" added successfully!\n\n🔄 Your item is now synced with Firebase and available for vendors to order in the marketplace.`
+        );
       } else {
         throw new Error("Failed to add item");
       }

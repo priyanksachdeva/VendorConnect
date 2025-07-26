@@ -51,17 +51,86 @@ router.get("/:id", async (req, res) => {
 // Create new order
 router.post("/", async (req, res) => {
   try {
-    const data = {
+    const orderData = {
       ...req.body,
       createdAt: req.body.createdAt || new Date().toISOString(),
       status: req.body.status || "pending",
+      orderNumber: `ORD-${Date.now()}`,
     };
-    const docRef = await db.collection("orders").add(data);
-    res.json({ message: "Order created", id: docRef.id, ...data });
+
+    // Start a Firestore transaction to ensure data consistency
+    const result = await db.runTransaction(async (transaction) => {
+      const orderRef = db.collection("orders").doc();
+
+      // Check and update inventory quantities for each item
+      for (const item of orderData.items) {
+        if (item.itemId) {
+          const inventoryRef = db.collection("inventory").doc(item.itemId);
+          const inventoryDoc = await transaction.get(inventoryRef);
+
+          if (inventoryDoc.exists) {
+            const inventoryData = inventoryDoc.data();
+            const currentQuantity = inventoryData.quantity || 0;
+            const orderedQuantity = item.quantity || 0;
+
+            if (currentQuantity >= orderedQuantity) {
+              // Update inventory quantity
+              const newQuantity = currentQuantity - orderedQuantity;
+              const newStatus = calculateStatus(
+                newQuantity,
+                inventoryData.minQuantity || 0
+              );
+
+              transaction.update(inventoryRef, {
+                quantity: newQuantity,
+                status: newStatus,
+                lastUpdated: new Date(),
+              });
+
+              console.log(
+                `📦 Updated inventory: ${inventoryData.name} - ${currentQuantity} → ${newQuantity}`
+              );
+            } else {
+              throw new Error(
+                `Insufficient inventory for ${item.itemName}. Available: ${currentQuantity}, Requested: ${orderedQuantity}`
+              );
+            }
+          }
+        }
+      }
+
+      // Create the order
+      transaction.set(orderRef, orderData);
+
+      return { id: orderRef.id, ...orderData };
+    });
+
+    console.log("✅ Order created successfully:", {
+      orderId: result.id,
+      orderNumber: result.orderNumber,
+      vendor: result.vendorName,
+      itemCount: result.items.length,
+      totalAmount: result.totalAmount,
+    });
+
+    res.json({
+      message: "Order created successfully",
+      id: result.id,
+      order: result,
+    });
   } catch (error) {
+    console.error("❌ Error creating order:", error);
     res.status(500).json({ error: error.message });
   }
 });
+
+// Helper function to calculate inventory status
+function calculateStatus(quantity, minQuantity) {
+  if (quantity === 0) return "Out of Stock";
+  if (quantity <= minQuantity) return "Low Stock";
+  if (quantity <= minQuantity * 2) return "Critical";
+  return "In Stock";
+}
 
 // Update order status
 router.put("/:id", async (req, res) => {
