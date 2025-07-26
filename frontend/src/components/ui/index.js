@@ -6,3 +6,5 @@ export { default as Badge } from "./Badge";
 export { default as SearchWithSuggestions } from "./SearchWithSuggestions";
 export { default as AdvancedFilter } from "./AdvancedFilter";
 export { default as ChartCard } from "./ChartCard";
+export { Waves } from "./waves-background";
+export { WavesDemo } from "./waves-demo";

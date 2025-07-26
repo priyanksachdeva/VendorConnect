@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
-import AuthForm from "./components/AuthForm";
+import LoginPage from "./pages/LoginPage";
 import VendorMarketplace from "./pages/VendorMarketplace";
 import SupplierInventory from "./pages/SupplierInventory";
 import OrdersPage from "./pages/OrdersPage";
@@ -163,7 +163,7 @@ function AppContent() {
   }
 
   if (!user) {
-    return <AuthForm />;
+    return <LoginPage />;
   }
 
   return <MainApp />;

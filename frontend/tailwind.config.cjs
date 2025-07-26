@@ -95,6 +95,7 @@ module.exports = {
         "slide-down": "slideDown 0.3s ease-out",
         "scale-in": "scaleIn 0.2s ease-out",
         "pulse-slow": "pulse 3s infinite",
+        "wave-pulse": "wave-pulse 4s ease-in-out infinite",
       },
       keyframes: {
         fadeIn: {
@@ -112,6 +113,10 @@ module.exports = {
         scaleIn: {
           "0%": { transform: "scale(0.9)", opacity: "0" },
           "100%": { transform: "scale(1)", opacity: "1" },
+        },
+        "wave-pulse": {
+          "0%, 100%": { opacity: "0.4" },
+          "50%": { opacity: "0.7" },
         },
       },
       boxShadow: {
