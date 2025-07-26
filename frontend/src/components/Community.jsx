@@ -2,6 +2,19 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../contexts/AuthContext";
 import { Button, Card, Input } from "./ui";
+import { db } from "../firebase/config";
+import {
+  collection,
+  addDoc,
+  getDocs,
+  orderBy,
+  query,
+  serverTimestamp,
+  doc,
+  updateDoc,
+  increment,
+} from "firebase/firestore";
+import API_BASE_URL from "../config/api";
 import toast from "react-hot-toast";
 
 function Community() {
@@ -33,20 +46,48 @@ function Community() {
   const fetchCommunityPosts = async () => {
     try {
       setLoading(true);
-      console.log("Fetching community posts...");
-      const response = await fetch("http://localhost:5000/api/community");
-      console.log("Response status:", response.status);
+      console.log("Fetching community posts from Firestore...");
 
-      if (response.ok) {
-        const data = await response.json();
-        console.log("Received data:", data);
-        console.log("Posts array:", data.data);
-        setPosts(data.data || []);
-      } else {
-        console.error(
-          "Failed to fetch community posts, status:",
-          response.status
+      // Try Firestore first
+      try {
+        const q = query(
+          collection(db, "community"),
+          orderBy("createdAt", "desc")
         );
+        const querySnapshot = await getDocs(q);
+        const firestorePosts = [];
+
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          firestorePosts.push({
+            id: doc.id,
+            ...data,
+            createdAt:
+              data.createdAt?.toDate?.()?.toISOString() || data.createdAt,
+            lastActivity:
+              data.lastActivity?.toDate?.()?.toISOString() || data.lastActivity,
+          });
+        });
+
+        console.log("Firestore posts:", firestorePosts);
+        setPosts(firestorePosts);
+        return; // Success, exit function
+      } catch (firestoreError) {
+        console.log(
+          "Firestore error, trying API fallback:",
+          firestoreError.message
+        );
+
+        // Fallback to API
+        const response = await fetch(`${API_BASE_URL}/api/community`);
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log("API fallback data:", data);
+          setPosts(data.data || data || []);
+        } else {
+          throw new Error(`API error: ${response.status}`);
+        }
       }
     } catch (error) {
       console.error("Error fetching posts:", error);
@@ -71,29 +112,59 @@ function Community() {
     setSubmitting(true);
     try {
       const postData = {
-        ...newPost,
+        title: newPost.title.trim(),
+        content: newPost.content.trim(),
+        category: newPost.category,
         authorId: user.uid,
         authorName:
           userProfile?.businessName || user.displayName || "Anonymous",
         authorType: userProfile?.userType || "vendor",
-        createdAt: new Date().toISOString(),
+        upvotes: 0,
+        replies: 0,
+        upvotedBy: [],
+        createdAt: serverTimestamp(),
+        lastActivity: serverTimestamp(),
       };
 
-      const response = await fetch("http://localhost:5000/api/community", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(postData),
-      });
+      // Try Firestore first
+      try {
+        const docRef = await addDoc(collection(db, "community"), postData);
+        console.log("Post created in Firestore with ID: ", docRef.id);
 
-      if (response.ok) {
-        toast.success("Post created successfully! 📝");
+        toast.success("Post created successfully! 🎉");
         setNewPost({ title: "", content: "", category: "general" });
         setShowCreatePost(false);
         fetchCommunityPosts(); // Refresh posts
-      } else {
-        throw new Error("Failed to create post");
+        return;
+      } catch (firestoreError) {
+        console.log(
+          "Firestore error, trying API fallback:",
+          firestoreError.message
+        );
+
+        // Fallback to API
+        const apiPostData = {
+          ...postData,
+          createdAt: new Date().toISOString(),
+          lastActivity: new Date().toISOString(),
+        };
+
+        const response = await fetch(`${API_BASE_URL}/api/community`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(apiPostData),
+        });
+
+        if (response.ok) {
+          toast.success("Post created successfully! 🎉");
+          setNewPost({ title: "", content: "", category: "general" });
+          setShowCreatePost(false);
+          fetchCommunityPosts();
+        } else {
+          throw new Error(`API error: ${response.status}`);
+        }
       }
     } catch (error) {
       console.error("Error creating post:", error);

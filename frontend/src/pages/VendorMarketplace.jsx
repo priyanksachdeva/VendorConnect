@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { motion } from "framer-motion";
+import { db } from "../firebase/config";
+import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
+import API_BASE_URL from "../config/api";
 import toast from "react-hot-toast";
 import {
   Button,
@@ -109,50 +112,117 @@ function VendorMarketplace() {
   const fetchMarketplaceItems = async () => {
     setLoading(true);
     try {
-      // Use the new marketplace-specific endpoint
-      const url = new URL("http://localhost:5000/api/inventory/marketplace");
+      // Try Firestore first
+      try {
+        let q = query(collection(db, "inventory"), where("quantity", ">", 0));
 
-      // Add filters if any
-      if (searchTerm) {
-        url.searchParams.append("search", searchTerm);
-      }
-      if (selectedCategory) {
-        url.searchParams.append("category", selectedCategory);
-      }
+        // Add category filter if selected
+        if (selectedCategory) {
+          q = query(q, where("category", "==", selectedCategory));
+        }
 
-      // Add advanced filters
-      if (advancedFilters.priceRange.min) {
-        url.searchParams.append("minPrice", advancedFilters.priceRange.min);
-      }
-      if (advancedFilters.priceRange.max) {
-        url.searchParams.append("maxPrice", advancedFilters.priceRange.max);
-      }
-      if (advancedFilters.suppliers.length > 0) {
-        url.searchParams.append(
-          "suppliers",
-          advancedFilters.suppliers.join(",")
-        );
-      }
-      if (advancedFilters.availability) {
-        url.searchParams.append("availability", advancedFilters.availability);
-      }
-      if (advancedFilters.sortBy) {
-        url.searchParams.append("sortBy", advancedFilters.sortBy);
-      }
+        // Order by creation date
+        q = query(q, orderBy("createdAt", "desc"));
 
-      const response = await fetch(url);
-      if (response.ok) {
-        const data = await response.json();
-        setItems(data);
+        const querySnapshot = await getDocs(q);
+        let marketplaceItems = [];
+
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          marketplaceItems.push({
+            id: doc.id,
+            ...data,
+            // Ensure consistent field names for marketplace
+            price: data.price || data.unitPrice || 0,
+            unitPrice: data.price || data.unitPrice || 0,
+            availableQuantity: data.quantity,
+            minOrder: data.minOrder || 1,
+            supplierName:
+              data.supplierName || data.supplier || "Unknown Supplier",
+            unit: data.unit || "piece",
+            category: data.category || "Other",
+            status: data.quantity > 0 ? "Available" : "Out of Stock",
+            createdAt:
+              data.createdAt?.toDate?.()?.toISOString() || data.createdAt,
+            lastUpdated:
+              data.lastUpdated?.toDate?.()?.toISOString() || data.lastUpdated,
+          });
+        });
+
+        // Apply search filter in memory
+        if (searchTerm) {
+          const searchLower = searchTerm.toLowerCase();
+          marketplaceItems = marketplaceItems.filter(
+            (item) =>
+              item.name?.toLowerCase().includes(searchLower) ||
+              item.description?.toLowerCase().includes(searchLower) ||
+              item.category?.toLowerCase().includes(searchLower) ||
+              item.supplierName?.toLowerCase().includes(searchLower)
+          );
+        }
+
+        // Apply advanced filters
+        if (advancedFilters.priceRange.min) {
+          marketplaceItems = marketplaceItems.filter(
+            (item) => item.price >= parseFloat(advancedFilters.priceRange.min)
+          );
+        }
+        if (advancedFilters.priceRange.max) {
+          marketplaceItems = marketplaceItems.filter(
+            (item) => item.price <= parseFloat(advancedFilters.priceRange.max)
+          );
+        }
+
         console.log(
-          `🛒 Loaded ${data.length} marketplace items from suppliers`
+          `🛒 Loaded ${marketplaceItems.length} marketplace items from Firestore`
         );
-      } else {
-        console.error(
-          "Failed to fetch marketplace items:",
-          response.statusText
+        setItems(marketplaceItems);
+        return;
+      } catch (firestoreError) {
+        console.log(
+          "Firestore error, trying API fallback:",
+          firestoreError.message
         );
-        toast.error("Failed to load marketplace items");
+
+        // Fallback to API
+        const url = new URL(`${API_BASE_URL}/api/inventory/marketplace`);
+
+        // Add filters if any
+        if (searchTerm) {
+          url.searchParams.append("search", searchTerm);
+        }
+        if (selectedCategory) {
+          url.searchParams.append("category", selectedCategory);
+        }
+
+        // Add advanced filters
+        if (advancedFilters.priceRange.min) {
+          url.searchParams.append("minPrice", advancedFilters.priceRange.min);
+        }
+        if (advancedFilters.priceRange.max) {
+          url.searchParams.append("maxPrice", advancedFilters.priceRange.max);
+        }
+        if (advancedFilters.suppliers.length > 0) {
+          url.searchParams.append(
+            "suppliers",
+            advancedFilters.suppliers.join(",")
+          );
+        }
+        if (advancedFilters.availability) {
+          url.searchParams.append("availability", advancedFilters.availability);
+        }
+        if (advancedFilters.sortBy) {
+          url.searchParams.append("sortBy", advancedFilters.sortBy);
+        }
+
+        const response = await fetch(url);
+        if (response.ok) {
+          const data = await response.json();
+          setItems(data);
+          console.log(`🛒 Loaded ${data.length} marketplace items from API`);
+        } else {
+          throw new Error(`API error: ${response.status}`);
+        }
       }
     } catch (error) {
       console.error("Error fetching marketplace items:", error);

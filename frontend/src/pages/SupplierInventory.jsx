@@ -1,6 +1,19 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { motion } from "framer-motion";
+import { db } from "../firebase/config";
+import {
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  where,
+  orderBy,
+  deleteDoc,
+  doc,
+  serverTimestamp,
+} from "firebase/firestore";
+import API_BASE_URL from "../config/api";
 import toast from "react-hot-toast";
 import { Button, Card, Input, Badge } from "../components/ui";
 
@@ -27,15 +40,51 @@ function SupplierInventory() {
     if (!user) return;
 
     try {
-      const response = await fetch(
-        `http://localhost:5000/api/inventory?supplierId=${user.uid}`
-      );
-      if (response.ok) {
-        const data = await response.json();
-        setItems(data);
+      // Try Firestore first
+      try {
+        const q = query(
+          collection(db, "inventory"),
+          where("supplierId", "==", user.uid),
+          orderBy("createdAt", "desc")
+        );
+        const querySnapshot = await getDocs(q);
+        const firestoreItems = [];
+
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          firestoreItems.push({
+            id: doc.id,
+            ...data,
+            createdAt:
+              data.createdAt?.toDate?.()?.toISOString() || data.createdAt,
+            lastUpdated:
+              data.lastUpdated?.toDate?.()?.toISOString() || data.lastUpdated,
+          });
+        });
+
+        console.log("Firestore supplier items:", firestoreItems);
+        setItems(firestoreItems);
+        return;
+      } catch (firestoreError) {
+        console.log(
+          "Firestore error, trying API fallback:",
+          firestoreError.message
+        );
+
+        // Fallback to API
+        const response = await fetch(
+          `${API_BASE_URL}/api/inventory?supplierId=${user.uid}`
+        );
+        if (response.ok) {
+          const data = await response.json();
+          setItems(data);
+        } else {
+          throw new Error(`API error: ${response.status}`);
+        }
       }
     } catch (error) {
       console.error("Error fetching items:", error);
+      toast.error("Failed to fetch inventory items");
     }
   };
 
@@ -52,32 +101,27 @@ function SupplierInventory() {
 
     try {
       const itemData = {
-        ...newItem,
-        supplierId: user.uid,
-        supplierName: userProfile?.businessName || user.displayName,
+        name: newItem.name.trim(),
+        category: newItem.category,
         price: parseFloat(newItem.price),
+        unit: newItem.unit,
         quantity: parseInt(newItem.quantity),
+        description: newItem.description.trim(),
         minOrder: parseInt(newItem.minOrder),
-        createdAt: new Date().toISOString(),
+        supplierId: user.uid,
+        supplierName:
+          userProfile?.businessName || user.displayName || "Unknown Supplier",
         status: "available",
+        createdAt: serverTimestamp(),
+        lastUpdated: serverTimestamp(),
       };
 
-      const response = await fetch("http://localhost:5000/api/inventory", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(itemData),
-      });
+      // Try Firestore first
+      try {
+        const docRef = await addDoc(collection(db, "inventory"), itemData);
+        console.log("Item added to Firestore with ID: ", docRef.id);
 
-      if (response.ok) {
-        const responseData = await response.json();
-        console.log("✅ Item added to inventory:", responseData);
-
-        // Refresh the supplier's items list
-        await fetchSupplierItems();
-
-        // Reset form
+        toast.success(`✅ Item "${itemData.name}" added successfully!`);
         setNewItem({
           name: "",
           category: "",
@@ -88,17 +132,49 @@ function SupplierInventory() {
           minOrder: "",
         });
         setShowAddForm(false);
-
-        // Show success message with sync info
-        alert(
-          `✅ Item "${itemData.name}" added successfully!\n\n🔄 Your item is now synced with Firebase and available for vendors to order in the marketplace.`
+        fetchSupplierItems();
+        return;
+      } catch (firestoreError) {
+        console.log(
+          "Firestore error, trying API fallback:",
+          firestoreError.message
         );
-      } else {
-        throw new Error("Failed to add item");
+
+        // Fallback to API
+        const apiItemData = {
+          ...itemData,
+          createdAt: new Date().toISOString(),
+          lastUpdated: new Date().toISOString(),
+        };
+
+        const response = await fetch(`${API_BASE_URL}/api/inventory`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(apiItemData),
+        });
+
+        if (response.ok) {
+          toast.success(`✅ Item "${itemData.name}" added successfully!`);
+          setNewItem({
+            name: "",
+            category: "",
+            price: "",
+            unit: "",
+            quantity: "",
+            description: "",
+            minOrder: "",
+          });
+          setShowAddForm(false);
+          fetchSupplierItems();
+        } else {
+          throw new Error(`API error: ${response.status}`);
+        }
       }
     } catch (error) {
       console.error("Error adding item:", error);
-      alert("Failed to add item. Please try again.");
+      toast.error("Failed to add item. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -106,18 +182,34 @@ function SupplierInventory() {
 
   const handleDeleteItem = async (itemId) => {
     try {
-      const response = await fetch(
-        `http://localhost:5000/api/inventory/${itemId}`,
-        {
-          method: "DELETE",
-        }
-      );
+      // Try Firestore first
+      try {
+        await deleteDoc(doc(db, "inventory", itemId));
+        console.log("Item deleted from Firestore");
 
-      if (response.ok) {
         setItems(items.filter((item) => item.id !== itemId));
         toast.success("Item deleted successfully! 🗑️");
-      } else {
-        throw new Error("Failed to delete item");
+        return;
+      } catch (firestoreError) {
+        console.log(
+          "Firestore error, trying API fallback:",
+          firestoreError.message
+        );
+
+        // Fallback to API
+        const response = await fetch(
+          `${API_BASE_URL}/api/inventory/${itemId}`,
+          {
+            method: "DELETE",
+          }
+        );
+
+        if (response.ok) {
+          setItems(items.filter((item) => item.id !== itemId));
+          toast.success("Item deleted successfully! 🗑️");
+        } else {
+          throw new Error("Failed to delete item");
+        }
       }
     } catch (error) {
       console.error("Error deleting item:", error);

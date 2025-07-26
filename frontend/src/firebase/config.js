@@ -1,7 +1,7 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, connectAuthEmulator } from "firebase/auth";
-import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
-import { getStorage, connectStorageEmulator } from "firebase/storage";
+import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
+// Using Firestore as storage - no separate storage service needed
 
 // Firebase configuration using environment variables
 const firebaseConfig = {
@@ -19,21 +19,8 @@ const app = initializeApp(firebaseConfig);
 // Initialize Firebase services
 export const auth = getAuth(app);
 export const db = getFirestore(app);
-export const storage = getStorage(app);
 
-// Connect to emulators in development
-if (import.meta.env.DEV) {
-  // Only connect to emulators in development and if not already connected
-  try {
-    connectAuthEmulator(auth, "http://localhost:9099", {
-      disableWarnings: true,
-    });
-    connectFirestoreEmulator(db, "localhost", 8080);
-    connectStorageEmulator(storage, "localhost", 9199);
-  } catch (error) {
-    // Emulators already connected or not available
-    console.log("Firebase emulators not connected:", error.message);
-  }
-}
+// Remove emulator connections and storage export
+// Using Firestore as the primary storage solution
 
 export default app;
