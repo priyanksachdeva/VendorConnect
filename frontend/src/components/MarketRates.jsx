@@ -52,61 +52,92 @@ function MarketRates() {
   ];
 
   const generateFallbackData = (state, commodity) => {
+    // Function to get market and district based on state
+    const getMarketInfo = (commodity, state) => {
+      if (state === "NCT of Delhi") {
+        const delhiMarkets = {
+          Rice: { market: "Azadpur Mandi", district: "North Delhi" },
+          Wheat: { market: "Najafgarh Mandi", district: "South West Delhi" },
+          Onion: { market: "Okhla Mandi", district: "South Delhi" },
+          Tomato: { market: "Ghazipur Mandi", district: "East Delhi" },
+          Potato: { market: "Azadpur Mandi", district: "North Delhi" },
+        };
+        return (
+          delhiMarkets[commodity] || {
+            market: "Azadpur Mandi",
+            district: "Central Delhi",
+          }
+        );
+      } else if (state === "Maharashtra") {
+        const maharashtraMarkets = {
+          Onion: { market: "Lasalgaon", district: "Nashik" },
+          Tomato: { market: "Pune Market", district: "Pune" },
+        };
+        return (
+          maharashtraMarkets[commodity] || {
+            market: "Mumbai Market",
+            district: "Mumbai",
+          }
+        );
+      } else if (state === "Punjab") {
+        return { market: "Ludhiana Mandi", district: "Ludhiana" };
+      } else if (state === "Haryana") {
+        return { market: "Karnal Mandi", district: "Karnal" };
+      } else {
+        return { market: "Local Mandi", district: "Main District" };
+      }
+    };
+
     const baseData = [
       {
         commodity: "Rice",
-        market: "Azadpur",
-        district: "Central Delhi",
         variety: "Basmati",
         grade: "FAQ",
         minPrice: "4200",
         maxPrice: "4800",
         modalPrice: "4500",
         change: "+2.5%",
+        ...getMarketInfo("Rice", state),
       },
       {
         commodity: "Wheat",
-        market: "Najafgarh",
-        district: "South West Delhi",
         variety: "Other",
         grade: "FAQ",
         minPrice: "2100",
         maxPrice: "2300",
         modalPrice: "2200",
         change: "+1.2%",
+        ...getMarketInfo("Wheat", state),
       },
       {
         commodity: "Onion",
-        market: state === "Maharashtra" ? "Lasalgaon" : "Local Mandi",
-        district: state === "Maharashtra" ? "Nashik" : "Main District",
         variety: "Red",
         grade: "FAQ",
         minPrice: "1800",
         maxPrice: "2200",
         modalPrice: "2000",
         change: "-3.4%",
+        ...getMarketInfo("Onion", state),
       },
       {
         commodity: "Tomato",
-        market: "Central Mandi",
-        district: "Main District",
         variety: "Hybrid",
         grade: "FAQ",
         minPrice: "2500",
         maxPrice: "3600",
         modalPrice: "3000",
         change: "+15.2%",
+        ...getMarketInfo("Tomato", state),
       },
       {
         commodity: "Potato",
-        market: "Wholesale Market",
-        district: "Main District",
         variety: "Local",
         grade: "FAQ",
         minPrice: "1200",
         maxPrice: "1600",
         modalPrice: "1400",
         change: "+0.8%",
+        ...getMarketInfo("Potato", state),
       },
     ];
 
