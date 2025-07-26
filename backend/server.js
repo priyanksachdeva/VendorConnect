@@ -17,7 +17,25 @@ const priceAlertsRoutes = require("./routes/price-alerts");
 const smartInventoryRoutes = require("./routes/smart-inventory");
 
 const app = express();
-app.use(cors());
+
+// Configure CORS for production and development
+const corsOptions = {
+  origin: [
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "https://vendorconnect-9baee.firebaseapp.com",
+    "https://vendor-connect-eight.vercel.app",
+    /\.vercel\.app$/,
+    /\.netlify\.app$/,
+    /\.railway\.app$/,
+  ],
+  credentials: true,
+  optionsSuccessStatus: 200,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+  allowedHeaders: ["Content-Type", "Authorization", "Accept"],
+};
+
+app.use(cors(corsOptions));
 app.use(bodyParser.json());
 
 // API routes with /api prefix
@@ -43,4 +61,10 @@ app.get("/", (req, res) => {
   res.json({ message: "VendorConnect API is running!" });
 });
 
-app.listen(5000, () => console.log("Server running on port 5000"));
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+  console.log(`🚀 VendorConnect API is running on port ${PORT}`);
+  console.log(`📡 Environment: ${process.env.NODE_ENV || "development"}`);
+  console.log(`🔥 Firebase Project: ${process.env.FIREBASE_PROJECT_ID}`);
+});
