@@ -8,7 +8,6 @@ const communityRoutes = require("./routes/community");
 const orderRoutes = require("./routes/orders");
 const mandiRoutes = require("./routes/mandi");
 const marketRatesRoutes = require("./routes/market-rates");
-const testMarketplaceRoutes = require("./routes/test-marketplace");
 const authRoutes = require("./routes/auth");
 const marketplaceRoutes = require("./routes/marketplace");
 const searchRoutes = require("./routes/search");
@@ -38,7 +37,6 @@ app.use("/api/analytics", analyticsRoutes);
 app.use("/api/reviews", reviewsRoutes);
 app.use("/api/price-alerts", priceAlertsRoutes);
 app.use("/api/smart-inventory", smartInventoryRoutes);
-app.use("/api", testMarketplaceRoutes);
 
 // Health check endpoint
 app.get("/", (req, res) => {
