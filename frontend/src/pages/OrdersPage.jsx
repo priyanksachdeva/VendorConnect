@@ -14,7 +14,7 @@ function OrdersPage() {
     if (!user || !userProfile) return;
 
     try {
-      let url = "http://localhost:5000/api/orders";
+      let url = "/api/orders";
 
       if (isVendor) {
         url += `?vendorId=${user.uid}`;
@@ -24,11 +24,17 @@ function OrdersPage() {
 
       const response = await fetch(url);
       if (response.ok) {
-        const data = await response.json();
-        setOrders(data);
+        const result = await response.json();
+        // Handle both old format (direct array) and new format (with data property)
+        const ordersData = result.data || result;
+        setOrders(Array.isArray(ordersData) ? ordersData : []);
+      } else {
+        console.error("Failed to fetch orders:", response.statusText);
+        setOrders([]);
       }
     } catch (error) {
       console.error("Error fetching orders:", error);
+      setOrders([]);
     } finally {
       setLoading(false);
     }
@@ -36,16 +42,13 @@ function OrdersPage() {
 
   const updateOrderStatus = async (orderId, newStatus) => {
     try {
-      const response = await fetch(
-        `http://localhost:5000/api/orders/${orderId}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ status: newStatus }),
-        }
-      );
+      const response = await fetch(`/api/orders/${orderId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
 
       if (response.ok) {
         setOrders(

@@ -29,6 +29,11 @@ router.get("/", async (req, res) => {
       // Ensure consistent price field for marketplace
       price: doc.data().price || doc.data().unitPrice || 0,
       unitPrice: doc.data().price || doc.data().unitPrice || 0,
+      // Ensure name field is always a valid string
+      name: String(doc.data().name || "Unnamed Item"),
+      // Ensure other required fields are properly typed
+      category: String(doc.data().category || "Uncategorized"),
+      quantity: Number(doc.data().quantity || 0),
     }));
 
     // Apply remaining filters in memory
@@ -213,33 +218,59 @@ router.get("/stats", async (req, res) => {
 // Create inventory item
 router.post("/", async (req, res) => {
   try {
+    const { name, category, price, quantity, supplier, supplierName } =
+      req.body;
+
+    // Input validation
+    if (!name || typeof name !== "string" || name.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Name is required and must be a non-empty string",
+      });
+    }
+
+    if (!category || typeof category !== "string") {
+      return res.status(400).json({
+        success: false,
+        message: "Category is required and must be a string",
+      });
+    }
+
+    if (!price || typeof price !== "number" || price <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Price is required and must be a positive number",
+      });
+    }
+
+    if (!quantity || typeof quantity !== "number" || quantity <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Quantity is required and must be a positive number",
+      });
+    }
+
     const data = {
       ...req.body,
+      name: name.trim(),
       lastUpdated: new Date(),
       createdAt: new Date(),
-      status: calculateStatus(
-        req.body.quantity || 0,
-        req.body.minQuantity || 0
-      ),
+      status: calculateStatus(quantity || 0, req.body.minQuantity || 0),
       // Ensure proper data structure for marketplace
-      price: parseFloat(req.body.price || req.body.unitPrice || 0),
-      unitPrice: parseFloat(req.body.price || req.body.unitPrice || 0),
+      price: parseFloat(price),
+      unitPrice: parseFloat(price),
       minOrder: parseInt(req.body.minOrder || 1),
-      quantity: parseInt(req.body.quantity || 0),
+      quantity: parseInt(quantity),
       minQuantity: parseInt(req.body.minQuantity || 0),
-      maxQuantity: parseInt(
-        req.body.maxQuantity || req.body.quantity * 10 || 100
-      ),
+      maxQuantity: parseInt(req.body.maxQuantity || quantity * 10 || 100),
     };
 
     // Generate SKU if not provided
     if (!data.sku) {
-      const categoryPrefix = data.category
-        ? data.category.substring(0, 3).toUpperCase()
+      const categoryPrefix = category
+        ? category.substring(0, 3).toUpperCase()
         : "ITM";
-      const namePrefix = data.name
-        ? data.name.substring(0, 3).toUpperCase()
-        : "XXX";
+      const namePrefix = name ? name.substring(0, 3).toUpperCase() : "XXX";
       const timestamp = Date.now().toString().slice(-6);
       data.sku = `${categoryPrefix}-${namePrefix}-${timestamp}`;
     }
@@ -257,14 +288,16 @@ router.post("/", async (req, res) => {
       price: data.price,
     });
 
-    res.json({
-      message: "Inventory item added successfully",
+    res.status(201).json({
       id: docRef.id,
-      item: createdItem,
+      ...data,
     });
   } catch (error) {
     console.error("❌ Error creating inventory item:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
   }
 });
 

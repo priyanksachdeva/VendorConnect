@@ -1,13 +1,24 @@
 {
-  "name": "frontend",
+  "name": "vendorconnect-frontend",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "Frontend for VendorConnect - Street Vendor Management Platform",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0"
   },
+  "keywords": [
+    "vendor",
+    "marketplace",
+    "react",
+    "vite",
+    "tailwind"
+  ],
+  "author": "VendorConnect Team",
+  "license": "MIT",
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.11",
     "autoprefixer": "^10.4.21",

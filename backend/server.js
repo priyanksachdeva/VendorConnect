@@ -8,18 +8,35 @@ const orderRoutes = require("./routes/orders");
 const mandiRoutes = require("./routes/mandi");
 const marketRatesRoutes = require("./routes/market-rates");
 const testMarketplaceRoutes = require("./routes/test-marketplace");
+const authRoutes = require("./routes/auth");
+const marketplaceRoutes = require("./routes/marketplace");
+const searchRoutes = require("./routes/search");
+const analyticsRoutes = require("./routes/analytics");
+const reviewsRoutes = require("./routes/reviews");
+const priceAlertsRoutes = require("./routes/price-alerts");
+const smartInventoryRoutes = require("./routes/smart-inventory");
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
 // API routes with /api prefix
+app.use("/auth", authRoutes); // Mount auth routes at /auth for frontend proxy
+app.use("/api/auth", authRoutes);
 app.use("/api/suppliers", supplierRoutes);
+app.use("/api/supplier", supplierRoutes); // Alias for supplier routes
 app.use("/api/inventory", inventoryRoutes);
 app.use("/api/community", communityRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/mandi", mandiRoutes);
 app.use("/api/market-rates", marketRatesRoutes);
+app.use("/api/marketrates", marketRatesRoutes); // Alias for different naming convention
+app.use("/api/marketplace", marketplaceRoutes);
+app.use("/api/search", searchRoutes);
+app.use("/api/analytics", analyticsRoutes);
+app.use("/api/reviews", reviewsRoutes);
+app.use("/api/price-alerts", priceAlertsRoutes);
+app.use("/api/smart-inventory", smartInventoryRoutes);
 app.use("/api", testMarketplaceRoutes);
 
 // Health check endpoint

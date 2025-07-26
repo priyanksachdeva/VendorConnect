@@ -5,75 +5,13 @@ import VendorMarketplace from "./pages/VendorMarketplace";
 import SupplierInventory from "./pages/SupplierInventory";
 import OrdersPage from "./pages/OrdersPage";
 import MarketRates from "./components/MarketRates";
+import ErrorBoundary from "./components/ErrorBoundary";
+import SmartInventoryTracker from "./components/SmartInventoryTracker";
+import PriceAlerts from "./components/PriceAlerts";
+import FeaturesDemo from "./pages/FeaturesDemo";
+import Community from "./components/Community";
 
 // Simple working components for general pages
-function SimpleCommunity() {
-  return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900">💬 Vendor Community</h2>
-
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h3 className="text-lg font-semibold mb-4">Recent Discussions</h3>
-        <div className="space-y-4">
-          <div className="border-l-4 border-blue-500 pl-4 py-2">
-            <div className="flex items-center justify-between mb-2">
-              <h4 className="font-medium text-gray-900">
-                Best suppliers for organic vegetables?
-              </h4>
-              <span className="text-sm text-gray-500">2h ago</span>
-            </div>
-            <p className="text-sm text-gray-600 mb-2">
-              Looking for reliable organic vegetable suppliers in Delhi NCR. Any
-              recommendations?
-            </p>
-            <div className="flex items-center space-x-4 text-sm text-gray-500">
-              <span>👍 12 upvotes</span>
-              <span>💬 8 replies</span>
-              <span>By: Ravi Kumar</span>
-            </div>
-          </div>
-
-          <div className="border-l-4 border-green-500 pl-4 py-2">
-            <div className="flex items-center justify-between mb-2">
-              <h4 className="font-medium text-gray-900">
-                Wholesale rice prices dropping!
-              </h4>
-              <span className="text-sm text-gray-500">5h ago</span>
-            </div>
-            <p className="text-sm text-gray-600 mb-2">
-              Great news! Rice prices have dropped by 10% this week. Good time
-              to stock up.
-            </p>
-            <div className="flex items-center space-x-4 text-sm text-gray-500">
-              <span>👍 25 upvotes</span>
-              <span>💬 15 replies</span>
-              <span>By: Priya Sharma</span>
-            </div>
-          </div>
-
-          <div className="border-l-4 border-purple-500 pl-4 py-2">
-            <div className="flex items-center justify-between mb-2">
-              <h4 className="font-medium text-gray-900">
-                New spice supplier in Khari Baoli
-              </h4>
-              <span className="text-sm text-gray-500">1d ago</span>
-            </div>
-            <p className="text-sm text-gray-600 mb-2">
-              Found an excellent new supplier for premium spices. Great quality
-              and competitive prices!
-            </p>
-            <div className="flex items-center space-x-4 text-sm text-gray-500">
-              <span>👍 18 upvotes</span>
-              <span>💬 12 replies</span>
-              <span>By: Amit Singh</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function MainApp() {
   const { user, userProfile, logout, isVendor, isSupplier } = useAuth();
   const [tab, setTab] = useState(isVendor ? "marketplace" : "inventory");
@@ -92,8 +30,11 @@ function MainApp() {
       return [
         { id: "marketplace", label: "Marketplace", icon: "🛒" },
         { id: "orders", label: "My Orders", icon: "📋" },
+        { id: "inventory", label: "Smart Inventory", icon: "📦" },
+        { id: "price-alerts", label: "Price Alerts", icon: "🔔" },
         { id: "rates", label: "Market Rates", icon: "📈" },
         { id: "community", label: "Community", icon: "💬" },
+        { id: "demo", label: "New Features", icon: "🚀" },
       ];
     } else if (isSupplier) {
       return [
@@ -101,6 +42,7 @@ function MainApp() {
         { id: "orders", label: "Orders", icon: "📋" },
         { id: "rates", label: "Market Rates", icon: "📈" },
         { id: "community", label: "Community", icon: "💬" },
+        { id: "demo", label: "New Features", icon: "🚀" },
       ];
     }
     return [];
@@ -172,16 +114,21 @@ function MainApp() {
 
       {/* Main Content */}
       <main className="w-full py-6 px-4 sm:px-6 lg:px-8">
-        {/* Vendor Pages */}
-        {isVendor && tab === "marketplace" && <VendorMarketplace />}
+        <ErrorBoundary>
+          {/* Vendor Pages */}
+          {isVendor && tab === "marketplace" && <VendorMarketplace />}
+          {isVendor && tab === "inventory" && <SmartInventoryTracker />}
+          {isVendor && tab === "price-alerts" && <PriceAlerts />}
 
-        {/* Supplier Pages */}
-        {isSupplier && tab === "inventory" && <SupplierInventory />}
+          {/* Supplier Pages */}
+          {isSupplier && tab === "inventory" && <SupplierInventory />}
 
-        {/* Common Pages */}
-        {tab === "orders" && <OrdersPage />}
-        {tab === "rates" && <MarketRates />}
-        {tab === "community" && <SimpleCommunity />}
+          {/* Common Pages */}
+          {tab === "orders" && <OrdersPage />}
+          {tab === "rates" && <MarketRates />}
+          {tab === "community" && <Community />}
+          {tab === "demo" && <FeaturesDemo />}
+        </ErrorBoundary>
       </main>
 
       {/* Footer */}

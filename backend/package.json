@@ -1,18 +1,23 @@
 {
-  "name": "backend",
+  "name": "vendorconnect-backend",
   "version": "1.0.0",
-  "description": "",
+  "description": "Backend API for VendorConnect - Street Vendor Management Platform",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
+    "dev": "node server.js",
     "init-db": "node scripts/initializeDatabase.js",
-    "validate-firebase": "node scripts/validateFirebase.js",
-    "dev": "node server.js"
+    "validate-firebase": "node scripts/validateFirebase.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "vendor",
+    "marketplace",
+    "firebase",
+    "api",
+    "express"
+  ],
+  "author": "VendorConnect Team",
+  "license": "MIT",
   "type": "commonjs",
   "dependencies": {
     "axios": "^1.11.0",

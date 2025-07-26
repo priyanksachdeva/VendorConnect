@@ -42,6 +42,163 @@ router.get("/", async (req, res) => {
   }
 });
 
+// Add new inventory item - MUST be before /:id route
+router.post("/inventory", async (req, res) => {
+  try {
+    const { name, category, quantity, price, unit, supplierId } = req.body;
+
+    // Input validation
+    if (!name || typeof name !== "string" || name.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Name is required and must be a non-empty string",
+      });
+    }
+
+    if (!category || typeof category !== "string") {
+      return res.status(400).json({
+        success: false,
+        message: "Category is required and must be a string",
+      });
+    }
+
+    if (!quantity || typeof quantity !== "number" || quantity <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Quantity is required and must be a positive number",
+      });
+    }
+
+    if (!price || typeof price !== "number" || price <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Price is required and must be a positive number",
+      });
+    }
+
+    if (!unit || typeof unit !== "string") {
+      return res.status(400).json({
+        success: false,
+        message: "Unit is required and must be a string",
+      });
+    }
+
+    if (!supplierId || typeof supplierId !== "string") {
+      return res.status(400).json({
+        success: false,
+        message: "Supplier ID is required and must be a string",
+      });
+    }
+
+    // Create new inventory item
+    const newItem = {
+      id: `inv_${Date.now()}`,
+      name: name.trim(),
+      category,
+      quantity,
+      price,
+      unit,
+      supplierId,
+      status: quantity > 10 ? "Available" : "Low Stock",
+      lastUpdated: new Date().toISOString(),
+    };
+
+    // In real app, save to database
+    // For testing, just return success
+    res.status(201).json({
+      success: true,
+      message: "Inventory item added successfully",
+      data: newItem,
+    });
+  } catch (error) {
+    console.error("Add inventory error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to add inventory item",
+      error: error.message,
+    });
+  }
+});
+
+// Get supplier inventory - MUST be before /:id route
+router.get("/inventory", async (req, res) => {
+  try {
+    const { supplierId, category, status } = req.query;
+
+    // Mock supplier inventory data for testing
+    const mockInventory = [
+      {
+        id: "inv_1",
+        supplierId: "supplier_1",
+        name: "Fresh Tomatoes",
+        category: "Vegetables",
+        quantity: 500,
+        price: 40,
+        unit: "kg",
+        status: "Available",
+        lastUpdated: new Date().toISOString(),
+      },
+      {
+        id: "inv_2",
+        supplierId: "supplier_2",
+        name: "Turmeric Powder",
+        category: "Spices",
+        quantity: 100,
+        price: 250,
+        unit: "kg",
+        status: "Available",
+        lastUpdated: new Date().toISOString(),
+      },
+      {
+        id: "inv_3",
+        supplierId: "supplier_1",
+        name: "Fresh Onions",
+        category: "Vegetables",
+        quantity: 800,
+        price: 30,
+        unit: "kg",
+        status: "Low Stock",
+        lastUpdated: new Date().toISOString(),
+      },
+    ];
+
+    let filteredInventory = [...mockInventory];
+
+    // Filter by supplier ID
+    if (supplierId) {
+      filteredInventory = filteredInventory.filter(
+        (item) => item.supplierId === supplierId
+      );
+    }
+
+    // Filter by category
+    if (category) {
+      filteredInventory = filteredInventory.filter(
+        (item) => item.category === category
+      );
+    }
+
+    // Filter by status
+    if (status) {
+      filteredInventory = filteredInventory.filter(
+        (item) => item.status === status
+      );
+    }
+
+    res.status(200).json({
+      success: true,
+      data: filteredInventory,
+      total: filteredInventory.length,
+    });
+  } catch (error) {
+    console.error("Supplier inventory error:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+});
+
 // Get supplier by ID
 router.get("/:id", async (req, res) => {
   try {

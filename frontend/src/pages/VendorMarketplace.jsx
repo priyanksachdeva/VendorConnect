@@ -11,6 +11,7 @@ import {
   AdvancedFilter,
   ChartCard,
 } from "../components/ui";
+import SupplierReview from "../components/SupplierReview";
 
 function VendorMarketplace() {
   const { user, userProfile } = useAuth();
@@ -924,6 +925,7 @@ function VendorMarketplace() {
 
 function ProductCard({ item, onAddToCart }) {
   const [quantity, setQuantity] = useState(item.minOrder || 1);
+  const [showReviews, setShowReviews] = useState(false);
 
   const handleAddToCart = () => {
     if (quantity >= (item.minOrder || 1) && quantity <= item.quantity) {
@@ -972,9 +974,17 @@ function ProductCard({ item, onAddToCart }) {
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Supplier:</span>
-            <span className="font-medium text-secondary-600">
-              {item.supplierName}
-            </span>
+            <div className="flex flex-col items-end">
+              <span className="font-medium text-secondary-600">
+                {item.supplierName}
+              </span>
+              <button
+                onClick={() => setShowReviews(true)}
+                className="text-xs text-blue-600 hover:text-blue-800 hover:underline mt-1"
+              >
+                View Reviews & Ratings
+              </button>
+            </div>
           </div>
         </div>
 
@@ -1007,6 +1017,41 @@ function ProductCard({ item, onAddToCart }) {
           Add to Cart
         </Button>
       </Card.Footer>
+
+      {/* Supplier Reviews Modal */}
+      {showReviews && (
+        <motion.div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          <motion.div
+            className="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-auto"
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+          >
+            <div className="flex justify-between items-center p-6 border-b">
+              <h3 className="text-xl font-bold text-gray-900">
+                Reviews for {item.supplierName}
+              </h3>
+              <button
+                onClick={() => setShowReviews(false)}
+                className="text-gray-400 hover:text-gray-600 text-2xl"
+              >
+                ×
+              </button>
+            </div>
+            <div className="p-6">
+              <SupplierReview
+                supplierId={item.supplierId || item.id}
+                supplierName={item.supplierName}
+              />
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
     </Card>
   );
 }

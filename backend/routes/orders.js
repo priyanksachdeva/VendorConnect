@@ -2,35 +2,129 @@ const express = require("express");
 const router = express.Router();
 const db = require("../config/firebase");
 
+// Mock orders data for testing when Firebase is not available
+const mockOrders = [
+  {
+    id: "order_1",
+    orderNumber: "ORD-1753522000001",
+    vendorId: "vendor_1",
+    vendorName: "Test Vendor",
+    supplierId: "supplier_1",
+    supplierName: "Fresh Vegetables Hub",
+    items: [
+      {
+        itemId: "item_1",
+        itemName: "Fresh Tomatoes",
+        quantity: 50,
+        unitPrice: 40,
+        total: 2000,
+      },
+    ],
+    totalAmount: 2000,
+    status: "pending",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: "order_2",
+    orderNumber: "ORD-1753522000002",
+    vendorId: "vendor_2",
+    vendorName: "Another Vendor",
+    supplierId: "supplier_2",
+    supplierName: "Spice Masters",
+    items: [
+      {
+        itemId: "item_2",
+        itemName: "Turmeric Powder",
+        quantity: 10,
+        unitPrice: 250,
+        total: 2500,
+      },
+    ],
+    totalAmount: 2500,
+    status: "completed",
+    createdAt: new Date(Date.now() - 86400000).toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+];
+
 // Get all orders with filtering
 router.get("/", async (req, res) => {
   try {
     const { vendorId, supplierId } = req.query;
-    let query = db.collection("orders").orderBy("createdAt", "desc");
 
-    if (vendorId) {
-      query = query.where("vendorId", "==", vendorId);
-    }
+    // Try Firebase first, fallback to mock data
+    try {
+      let query = db.collection("orders").orderBy("createdAt", "desc");
 
-    if (supplierId) {
-      // For suppliers, we need to check if any items in the order are from this supplier
-      const snapshot = await db.collection("orders").get();
-      const orders = snapshot.docs
-        .map((doc) => ({ id: doc.id, ...doc.data() }))
-        .filter(
+      if (vendorId) {
+        query = query.where("vendorId", "==", vendorId);
+      }
+
+      if (supplierId) {
+        // For suppliers, we need to check if any items in the order are from this supplier
+        const snapshot = await db.collection("orders").get();
+        const orders = snapshot.docs
+          .map((doc) => ({ id: doc.id, ...doc.data() }))
+          .filter(
+            (order) =>
+              order.items &&
+              order.items.some((item) => item.supplierId === supplierId)
+          )
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        return res.status(200).json({
+          success: true,
+          data: orders,
+          total: orders.length,
+        });
+      }
+
+      const snapshot = await query.get();
+      const orders = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      res.status(200).json({
+        success: true,
+        data: orders,
+        total: orders.length,
+      });
+    } catch (firebaseError) {
+      console.log(
+        "Firebase unavailable, using mock data:",
+        firebaseError.message
+      );
+
+      // Use mock data
+      let filteredOrders = [...mockOrders];
+
+      if (vendorId) {
+        filteredOrders = filteredOrders.filter(
+          (order) => order.vendorId === vendorId
+        );
+      }
+
+      if (supplierId) {
+        filteredOrders = filteredOrders.filter(
           (order) =>
             order.items &&
             order.items.some((item) => item.supplierId === supplierId)
-        )
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-      return res.json(orders);
-    }
+        );
+      }
 
-    const snapshot = await query.get();
-    const orders = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-    res.json(orders);
+      res.status(200).json({
+        success: true,
+        data: filteredOrders,
+        total: filteredOrders.length,
+        source: "mock_data",
+      });
+    }
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Orders GET error:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
   }
 });
 
