@@ -200,20 +200,6 @@ const LoginPageWithHero = () => {
     }));
   };
 
-  const useTestCredentials = (type) => {
-    const testCreds = {
-      vendor: { email: "vendor@test.com", password: "test123" },
-      supplier: { email: "supplier@test.com", password: "test123" },
-    };
-
-    setFormData((prev) => ({
-      ...prev,
-      email: testCreds[type].email,
-      password: testCreds[type].password,
-    }));
-    setUserType(type);
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
@@ -396,27 +382,6 @@ const LoginPageWithHero = () => {
                 Note: Please allow popups and ensure cookies are enabled for
                 Google login to work properly.
               </p>
-            </div>
-
-            {/* Test Credentials */}
-            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-              <p className="text-sm text-gray-600 mb-2">Quick test access:</p>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => useTestCredentials("vendor")}
-                  className="flex-1 px-3 py-2 bg-blue-100 text-blue-700 rounded text-xs font-medium hover:bg-blue-200 transition-colors"
-                >
-                  Demo Vendor
-                </button>
-                <button
-                  type="button"
-                  onClick={() => useTestCredentials("supplier")}
-                  className="flex-1 px-3 py-2 bg-green-100 text-green-700 rounded text-xs font-medium hover:bg-green-200 transition-colors"
-                >
-                  Demo Supplier
-                </button>
-              </div>
             </div>
 
             {/* Toggle Auth Mode */}

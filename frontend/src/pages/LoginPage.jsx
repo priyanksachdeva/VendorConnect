@@ -27,12 +27,6 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Test user credentials for demo
-  const testCredentials = {
-    vendor: { email: "vendor@test.com", password: "test123" },
-    supplier: { email: "supplier@test.com", password: "test123" },
-  };
-
   const handleGoogleLogin = async () => {
     try {
       setLoading(true);
@@ -65,14 +59,6 @@ const LoginPage = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleTestLogin = (type) => {
-    setFormData({
-      ...formData,
-      email: testCredentials[type].email,
-      password: testCredentials[type].password,
-    });
   };
 
   const handleChange = (e) => {
@@ -409,31 +395,6 @@ const LoginPage = () => {
                 Continue with Google
               </button>
             </div>
-
-            {/* Test Login Buttons */}
-            {isLogin && (
-              <div className="mt-6 pt-4 border-t border-gray-200">
-                <p className="text-sm text-gray-600 mb-3 text-center">
-                  Quick test login:
-                </p>
-                <div className="flex space-x-2">
-                  <button
-                    type="button"
-                    onClick={() => handleTestLogin("vendor")}
-                    className="flex-1 py-2 px-3 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors"
-                  >
-                    Demo Vendor
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleTestLogin("supplier")}
-                    className="flex-1 py-2 px-3 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
-                  >
-                    Demo Supplier
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
 
           <p className="text-xs text-gray-500 text-center">
