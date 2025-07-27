@@ -25,6 +25,7 @@ const corsOptions = {
     "http://localhost:3000",
     "https://vendorconnect-9baee.firebaseapp.com",
     "https://vendor-connect-eight.vercel.app",
+    "https://vendorconnect-production.up.railway.app",
     /\.vercel\.app$/,
     /\.netlify\.app$/,
     /\.railway\.app$/,
