@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
+import { useAuth } from "../contexts/AuthContext";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import { Button, Card, Input, Badge } from "../components/ui";
 
 export default function Orders() {
+  const { user } = useAuth();
   const [orders, setOrders] = useState([]);
   const [filteredOrders, setFilteredOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -11,20 +13,28 @@ export default function Orders() {
   const [statusFilter, setStatusFilter] = useState("");
 
   useEffect(() => {
-    fetchOrders();
-  }, []);
+    if (user) fetchOrders();
+  }, [user]);
 
   useEffect(() => {
     filterOrders();
   }, [orders, searchTerm, statusFilter]);
 
   const fetchOrders = async () => {
+    if (!user) return;
     try {
-      const response = await fetch("http://localhost:5000/api/orders");
+      const response = await fetch(
+        `http://localhost:5000/api/orders?vendorId=${user.uid}`
+      );
       if (response.ok) {
-        const data = await response.json();
-        setOrders(data);
-        console.log(`📦 Loaded ${data.length} orders`);
+        const result = await response.json();
+        const ordersData = result.data || result;
+        setOrders(Array.isArray(ordersData) ? ordersData : []);
+        console.log(
+          `📦 Loaded ${
+            Array.isArray(ordersData) ? ordersData.length : 0
+          } orders`
+        );
       } else {
         throw new Error("Failed to fetch orders");
       }
@@ -59,14 +69,6 @@ export default function Orders() {
       console.error("Error updating order status:", error);
       toast.error("Failed to update order status");
     }
-  };
-
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString();
-  };
-
-  const getUniqueStatuses = () => {
-    return [...new Set(orders.map((order) => order.status))];
   };
 
   const filterOrders = () => {

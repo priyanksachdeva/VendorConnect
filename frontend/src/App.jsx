@@ -215,7 +215,9 @@ function MainApp() {
       <main className="w-full py-6 px-4 sm:px-6 lg:px-8">
         <ErrorBoundary>
           {/* Vendor Pages */}
-          {isVendor && tab === "marketplace" && <VendorMarketplace />}
+          {isVendor && tab === "marketplace" && (
+            <VendorMarketplace setTab={setTab} />
+          )}
           {isVendor && tab === "inventory" && <SmartInventoryTracker />}
           {isVendor && tab === "price-alerts" && <PriceAlerts />}
 

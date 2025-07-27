@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import LiveMandiRatesPreview from "../components/LiveMandiRatesPreview";
 import { useAuth } from "../contexts/AuthContext";
 import { motion } from "framer-motion";
 import { db } from "../firebase/config";
@@ -24,7 +25,7 @@ import {
 } from "../components/ui";
 import SupplierReview from "../components/SupplierReview";
 
-function VendorMarketplace() {
+function VendorMarketplace({ setTab }) {
   const { user, userProfile } = useAuth();
   const [items, setItems] = useState([]);
   const [cart, setCart] = useState([]);
@@ -140,9 +141,17 @@ function VendorMarketplace() {
 
         querySnapshot.forEach((doc) => {
           const data = doc.data();
+          // Always provide a non-null supplierId for backend filtering and order association
+          const supplierId =
+            data.supplierId ||
+            data.supplier_id ||
+            data.supplier ||
+            data.supplierName ||
+            "unknown";
           marketplaceItems.push({
             id: doc.id,
             ...data,
+            supplierId,
             // Ensure consistent field names for marketplace
             price: data.price || data.unitPrice || 0,
             unitPrice: data.price || data.unitPrice || 0,
@@ -356,24 +365,47 @@ function VendorMarketplace() {
       // Get vendor contact information
       const vendorPhone = userProfile?.contactNumber || null;
 
-      const orderData = {
-        vendorId: user.uid,
-        vendorName: userProfile?.businessName || user.displayName,
-        vendorPhone: vendorPhone,
-        items: cart.map((item) => ({
+      // Always use user.uid for vendorId to ensure consistency
+      const vendorId = user?.uid || "unknown_vendor";
+      const vendorName =
+        userProfile?.businessName ||
+        userProfile?.displayName ||
+        user?.displayName ||
+        "Unknown Vendor";
+
+      const items = cart.map((item) => {
+        // Defensive: ensure supplierId is always a string and not null/undefined
+        let supplierId =
+          item.supplierId ||
+          item.supplier_id ||
+          item.supplier ||
+          item.supplierName ||
+          "unknown_supplier";
+        if (typeof supplierId !== "string") supplierId = String(supplierId);
+        return {
           itemId: item.id,
           itemName: item.name,
-          supplierId: item.supplierId,
-          supplierName: item.supplierName,
+          supplierId,
+          supplierName: item.supplierName || "Unknown Supplier",
           supplierPhone: item.supplierPhone || null,
           quantity: item.quantity,
           price: item.price,
           unit: item.unit,
-        })),
+        };
+      });
+
+      const orderData = {
+        vendorId,
+        vendorName,
+        vendorPhone,
+        items,
         totalAmount: parseFloat(calculateTotal()),
         status: "pending",
         createdAt: new Date().toISOString(),
       };
+
+      // Debug: log orderData before sending
+      console.log("[Order Debug] Placing order:", orderData);
 
       const response = await fetch("http://localhost:5000/api/orders", {
         method: "POST",
@@ -383,17 +415,29 @@ function VendorMarketplace() {
         body: JSON.stringify(orderData),
       });
 
+      // Debug: log response
+      const respText = await response.text();
+      console.log("[Order Debug] Order response:", respText);
+      let respJson;
+      try {
+        respJson = JSON.parse(respText);
+      } catch {
+        respJson = respText;
+      }
+
       if (response.ok) {
         toast.success("Order placed successfully! 🎉");
         setCart([]);
         setShowCart(false);
         fetchMarketplaceItems(); // Refresh items to update quantities
       } else {
-        throw new Error("Failed to place order");
+        throw new Error(
+          "Failed to place order: " + (respJson?.error || respJson)
+        );
       }
     } catch (error) {
       console.error("Error placing order:", error);
-      toast.error("Failed to place order. Please try again.");
+      toast.error("Failed to place order. Please try again.\n" + error.message);
     } finally {
       setLoading(false);
     }
@@ -598,7 +642,7 @@ function VendorMarketplace() {
           </motion.div>
         )}
 
-        {/* Quick Market Rates */}
+        {/* Quick Market Rates (Live) */}
         <motion.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -609,77 +653,19 @@ function VendorMarketplace() {
               <div className="flex items-center justify-between">
                 <Card.Title className="flex items-center text-primary-700">
                   <span className="mr-2 text-2xl">📈</span>
-                  Today's Market Rates (Delhi NCR)
+                  Today's Market Rates (Live)
                 </Card.Title>
                 <Button
                   variant="link"
                   size="sm"
                   className="text-primary-600 hover:text-primary-700"
+                  onClick={() => setTab && setTab("rates")}
                 >
                   View All Rates →
                 </Button>
               </div>
             </Card.Header>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[
-                {
-                  name: "Rice (Basmati)",
-                  price: "₹4,200-4,800/q",
-                  change: "+2.5% ↗",
-                  trend: "up",
-                },
-                {
-                  name: "Wheat",
-                  price: "₹2,100-2,300/q",
-                  change: "+1.2% ↗",
-                  trend: "up",
-                },
-                {
-                  name: "Onion",
-                  price: "₹1,800-2,200/q",
-                  change: "-3.4% ↘",
-                  trend: "down",
-                },
-                {
-                  name: "Tomato",
-                  price: "₹2,500-3,000/q",
-                  change: "+15.2% ↗",
-                  trend: "up",
-                },
-              ].map((item, index) => (
-                <motion.div
-                  key={item.name}
-                  className="bg-white rounded-xl p-4 shadow-soft border border-white/50"
-                  initial={{ scale: 0.9, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ delay: 0.3 + index * 0.1 }}
-                  whileHover={{ scale: 1.05 }}
-                >
-                  <div className="font-semibold text-gray-900 text-sm">
-                    {item.name}
-                  </div>
-                  <div
-                    className={`font-bold text-lg ${
-                      item.trend === "up"
-                        ? "text-success-600"
-                        : "text-error-600"
-                    }`}
-                  >
-                    {item.price}
-                  </div>
-                  <div
-                    className={`text-xs font-medium ${
-                      item.trend === "up"
-                        ? "text-success-600"
-                        : "text-error-600"
-                    }`}
-                  >
-                    {item.change}
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+            <LiveMandiRatesPreview />
           </Card>
         </motion.div>
 

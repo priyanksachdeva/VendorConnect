@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import LiveMandiRatesPreview from "../components/LiveMandiRatesPreview";
 import { useAuth } from "../contexts/AuthContext";
 import { motion } from "framer-motion";
 import { db } from "../firebase/config";
@@ -261,7 +262,7 @@ function SupplierInventory() {
           </Button>
         </motion.div>
 
-        {/* Quick Market Rates for Suppliers */}
+        {/* Quick Market Rates for Suppliers (Live) */}
         <motion.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -272,89 +273,19 @@ function SupplierInventory() {
               <div className="flex items-center justify-between">
                 <Card.Title className="flex items-center text-primary-700">
                   <span className="mr-2 text-2xl">📊</span>
-                  Current Market Rates - Price Your Items Competitively
+                  Current Market Rates (Live)
                 </Card.Title>
                 <Button
                   variant="link"
                   size="sm"
                   className="text-primary-600 hover:text-primary-700"
+                  onClick={() => window.setTab && window.setTab("rates")}
                 >
                   View All Rates →
                 </Button>
               </div>
             </Card.Header>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[
-                {
-                  name: "Rice (Basmati)",
-                  price: "₹4,200-4,800/q",
-                  change: "High Demand ↗",
-                  trend: "up",
-                },
-                {
-                  name: "Wheat",
-                  price: "₹2,100-2,300/q",
-                  change: "Stable ↔",
-                  trend: "stable",
-                },
-                {
-                  name: "Onion",
-                  price: "₹1,800-2,200/q",
-                  change: "Price Drop ↘",
-                  trend: "down",
-                },
-                {
-                  name: "Tomato",
-                  price: "₹2,500-3,000/q",
-                  change: "Seasonal High ↗",
-                  trend: "up",
-                },
-              ].map((item, index) => (
-                <motion.div
-                  key={item.name}
-                  className="bg-white rounded-xl p-4 shadow-soft border border-white/50"
-                  initial={{ scale: 0.9, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ delay: 0.3 + index * 0.1 }}
-                  whileHover={{ scale: 1.05 }}
-                >
-                  <div className="font-semibold text-gray-900 text-sm">
-                    {item.name}
-                  </div>
-                  <div
-                    className={`font-bold text-lg ${
-                      item.trend === "up"
-                        ? "text-success-600"
-                        : item.trend === "down"
-                        ? "text-error-600"
-                        : "text-secondary-600"
-                    }`}
-                  >
-                    {item.price}
-                  </div>
-                  <div
-                    className={`text-xs font-medium ${
-                      item.trend === "up"
-                        ? "text-success-600"
-                        : item.trend === "down"
-                        ? "text-error-600"
-                        : "text-secondary-600"
-                    }`}
-                  >
-                    {item.change}
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-
-            <div className="mt-4 p-4 bg-white/50 rounded-lg">
-              <div className="text-sm text-gray-600 flex items-center">
-                <span className="mr-2">💡</span>
-                <strong>Tip:</strong> Price your items within 5-10% of market
-                rates for competitive advantage
-              </div>
-            </div>
+            <LiveMandiRatesPreview />
           </Card>
         </motion.div>
 

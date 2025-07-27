@@ -284,34 +284,34 @@ function MarketRates() {
           "Full API response structure:",
           JSON.stringify(data, null, 2)
         );
-        throw new Error(
-          `No data records found. API returned: ${JSON.stringify(
-            data
-          ).substring(0, 500)}...`
-        );
+        // No records found, just set rates to empty and let UI show the friendly message.
+        setRates([]);
+        setLastUpdated(new Date());
+        setError(null);
+        return;
       }
     } catch (error) {
-      console.error("Error fetching market rates:", error);
-
-      let errorMessage = `Failed to fetch live data: ${error.message}`;
-
-      // Check for CORS error
-      if (error.message.includes("CORS") || error.message.includes("blocked")) {
-        errorMessage =
-          "CORS policy blocked the request. API might need to be called from a server.";
-      } else if (error.message.includes("Failed to fetch")) {
-        errorMessage =
-          "Network error - could be CORS, internet connection, or API server issue.";
+      // Only log real errors (not 'no data')
+      if (error.message && error.message.startsWith("No data records found.")) {
+        // Already handled above, do nothing
+        setRates([]);
+        setError(null);
+      } else {
+        console.error("Error fetching market rates:", error);
+        let errorMessage = `Failed to fetch live data: ${error.message}`;
+        // Check for CORS error
+        if (
+          error.message.includes("CORS") ||
+          error.message.includes("blocked")
+        ) {
+          errorMessage =
+            "CORS policy blocked the request. API might need to be called from a server.";
+        } else if (error.message.includes("Failed to fetch")) {
+          errorMessage =
+            "Network error - could be CORS, internet connection, or API server issue.";
+        }
+        setError(errorMessage);
       }
-
-      setError(`${errorMessage} Showing sample data.`);
-
-      // Fallback to sample data with more realistic data for selected state
-      const sampleRates = generateFallbackData(
-        selectedState,
-        selectedCommodity
-      );
-      setRates(sampleRates);
     } finally {
       setLoading(false);
     }

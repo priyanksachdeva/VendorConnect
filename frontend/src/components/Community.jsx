@@ -30,6 +30,7 @@ function Community() {
   });
   const [newReply, setNewReply] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState("general");
 
   const categories = [
     { value: "general", label: "General Discussion", icon: "💬" },
@@ -318,7 +319,12 @@ function Community() {
         {categories.map((category) => (
           <button
             key={category.value}
-            className="flex items-center space-x-1 px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-full text-sm transition-colors"
+            onClick={() => setSelectedCategory(category.value)}
+            className={`flex items-center space-x-1 px-3 py-1 rounded-full text-sm transition-colors ${
+              selectedCategory === category.value
+                ? "bg-primary-100 text-primary-700 font-semibold"
+                : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+            }`}
           >
             <span>{category.icon}</span>
             <span>{category.label}</span>
@@ -328,97 +334,98 @@ function Community() {
 
       {/* Posts List */}
       <div className="space-y-4">
-        {posts.length === 0 ? (
+        {posts.filter((post) => post.category === selectedCategory).length ===
+        0 ? (
           <Card className="text-center py-8">
             <div className="text-gray-500">
               No posts yet. Be the first to start a discussion!
             </div>
           </Card>
         ) : (
-          posts.map((post) => (
-            <Card key={post.id} className="p-6">
-              <div
-                className={`border-l-4 ${getBorderColor(post.category)} pl-4`}
-              >
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-2 mb-2">
-                      <span className="text-sm bg-gray-100 px-2 py-1 rounded-full">
-                        {getCategoryIcon(post.category)}{" "}
-                        {getCategoryLabel(post.category)}
-                      </span>
-                      <span className="text-sm text-gray-500">
-                        {formatDate(post.createdAt)}
-                      </span>
-                    </div>
-                    <h4 className="font-semibold text-gray-900 text-lg mb-2">
-                      {post.title}
-                    </h4>
-                    <p className="text-gray-600 mb-3">{post.content}</p>
-                    <div className="flex items-center space-x-1 text-sm text-gray-500">
-                      <span>By: {post.authorName}</span>
-                      <span>•</span>
-                      <span className="capitalize">{post.authorType}</span>
+          posts
+            .filter((post) => post.category === selectedCategory)
+            .map((post) => (
+              <Card key={post.id} className="p-6">
+                <div
+                  className={`border-l-4 ${getBorderColor(post.category)} pl-4`}
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <span className="text-sm bg-gray-100 px-2 py-1 rounded-full">
+                          {getCategoryIcon(post.category)}{" "}
+                          {getCategoryLabel(post.category)}
+                        </span>
+                        <span className="text-sm text-gray-500">
+                          {formatDate(post.createdAt)}
+                        </span>
+                      </div>
+                      <h4 className="font-semibold text-gray-900 text-lg mb-2">
+                        {post.title}
+                      </h4>
+                      <p className="text-gray-600 mb-3">{post.content}</p>
+                      <div className="flex items-center space-x-1 text-sm text-gray-500">
+                        <span>By: {post.authorName}</span>
+                        <span>•</span>
+                        <span className="capitalize">{post.authorType}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Post Actions */}
-                <div className="flex items-center space-x-4 pt-4 border-t border-gray-100">
-                  <button
-                    onClick={() => handleUpvote(post.id)}
-                    className="flex items-center space-x-1 text-gray-500 hover:text-primary-600 transition-colors"
-                  >
-                    <span>👍</span>
-                    <span>{post.upvotes || 0} upvotes</span>
-                  </button>
-                  <button
-                    onClick={() =>
-                      setSelectedPost(selectedPost === post.id ? null : post.id)
-                    }
-                    className="flex items-center space-x-1 text-gray-500 hover:text-primary-600 transition-colors"
-                  >
-                    <span>💬</span>
-                    <span>{post.replies || 0} replies</span>
-                  </button>
-                  <button className="flex items-center space-x-1 text-gray-500 hover:text-primary-600 transition-colors">
-                    <span>📤</span>
-                    <span>Share</span>
-                  </button>
-                </div>
-
-                {/* Reply Section */}
-                <AnimatePresence>
-                  {selectedPost === post.id && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="mt-4 pt-4 border-t border-gray-100"
+                  {/* Post Actions */}
+                  <div className="flex items-center space-x-4 pt-4 border-t border-gray-100">
+                    <button
+                      onClick={() => handleUpvote(post.id)}
+                      className="flex items-center space-x-1 text-gray-500 hover:text-primary-600 transition-colors"
                     >
-                      <div className="flex space-x-3">
-                        <textarea
-                          value={newReply}
-                          onChange={(e) => setNewReply(e.target.value)}
-                          placeholder="Write a reply..."
-                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
-                          rows={3}
-                        />
-                        <Button
-                          onClick={() => handleReply(post.id)}
-                          variant="primary"
-                          size="sm"
-                          disabled={!newReply.trim()}
-                        >
-                          Reply
-                        </Button>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            </Card>
-          ))
+                      <span>👍</span>
+                      <span>{post.upvotes || 0} upvotes</span>
+                    </button>
+                    <button
+                      onClick={() =>
+                        setSelectedPost(
+                          selectedPost === post.id ? null : post.id
+                        )
+                      }
+                      className="flex items-center space-x-1 text-gray-500 hover:text-primary-600 transition-colors"
+                    >
+                      <span>💬</span>
+                      <span>{post.replies || 0} replies</span>
+                    </button>
+                  </div>
+
+                  {/* Reply Section */}
+                  <AnimatePresence>
+                    {selectedPost === post.id && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="mt-4 pt-4 border-t border-gray-100"
+                      >
+                        <div className="flex space-x-3">
+                          <textarea
+                            value={newReply}
+                            onChange={(e) => setNewReply(e.target.value)}
+                            placeholder="Write a reply..."
+                            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
+                            rows={3}
+                          />
+                          <Button
+                            onClick={() => handleReply(post.id)}
+                            variant="primary"
+                            size="sm"
+                            disabled={!newReply.trim()}
+                          >
+                            Reply
+                          </Button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </Card>
+            ))
         )}
       </div>
 
