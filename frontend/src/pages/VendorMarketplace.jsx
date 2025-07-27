@@ -27,6 +27,10 @@ import SupplierReview from "../components/SupplierReview";
 
 function VendorMarketplace({ setTab }) {
   const { user, userProfile } = useAuth();
+  
+  // Safely determine user type
+  const isVendor = userProfile?.userType === "vendor";
+  const isSupplier = userProfile?.userType === "supplier";
   const [items, setItems] = useState([]);
   const [cart, setCart] = useState([]);
   const [showCart, setShowCart] = useState(false);
@@ -404,10 +408,7 @@ function VendorMarketplace({ setTab }) {
         createdAt: new Date().toISOString(),
       };
 
-      // Debug: log orderData before sending
-      console.log("[Order Debug] Placing order:", orderData);
-
-      const response = await fetch("http://localhost:5000/api/orders", {
+      const response = await fetch(`${API_BASE_URL}/api/orders`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -415,24 +416,23 @@ function VendorMarketplace({ setTab }) {
         body: JSON.stringify(orderData),
       });
 
-      // Debug: log response
-      const respText = await response.text();
-      console.log("[Order Debug] Order response:", respText);
-      let respJson;
-      try {
-        respJson = JSON.parse(respText);
-      } catch {
-        respJson = respText;
-      }
-
       if (response.ok) {
-        toast.success("Order placed successfully! 🎉");
+        const respJson = await response.json();
+        toast.success("Order placed successfully! 🎉 Check your orders page to track it.");
         setCart([]);
         setShowCart(false);
         fetchMarketplaceItems(); // Refresh items to update quantities
+        
+        // Auto-navigate to orders page after successful order
+        setTimeout(() => {
+          if (setTab) {
+            setTab("orders");
+          }
+        }, 2000);
       } else {
+        const errorData = await response.json();
         throw new Error(
-          "Failed to place order: " + (respJson?.error || respJson)
+          "Failed to place order: " + (errorData?.error || errorData)
         );
       }
     } catch (error) {
@@ -961,6 +961,19 @@ function VendorMarketplace({ setTab }) {
                             Continue Shopping
                           </Button>
                         </div>
+                        {isVendor && (
+                          <div className="mt-3 text-center">
+                            <button
+                              onClick={() => {
+                                setShowCart(false);
+                                setTab("orders");
+                              }}
+                              className="text-blue-600 hover:text-blue-800 text-sm underline"
+                            >
+                              View My Orders →
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </Card.Footer>
                   </>

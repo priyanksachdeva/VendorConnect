@@ -1,20 +1,36 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
+import API_BASE_URL from "../config/api";
 
 function OrdersPage() {
-  const { user, userProfile, isVendor, isSupplier } = useAuth();
+  const { user, userProfile, loading: authLoading } = useAuth();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Safely determine user type
+  const isVendor = userProfile?.userType === "vendor";
+  const isSupplier = userProfile?.userType === "supplier";
+
+
 
   useEffect(() => {
-    fetchOrders();
-  }, [user, userProfile]);
+    if (!authLoading && user && userProfile) {
+      fetchOrders();
+    }
+  }, [user, userProfile, authLoading]);
 
-  const fetchOrders = async () => {
+  const fetchOrders = async (isRefresh = false) => {
     if (!user || !userProfile) return;
 
+    if (isRefresh) {
+      setRefreshing(true);
+    }
+
     try {
-      let url = "/api/orders";
+
+
+      let url = `${API_BASE_URL}/api/orders`;
 
       if (isVendor) {
         url += `?vendorId=${user.uid}`;
@@ -23,6 +39,7 @@ function OrdersPage() {
       }
 
       const response = await fetch(url);
+      
       if (response.ok) {
         const result = await response.json();
         // Handle both old format (direct array) and new format (with data property)
@@ -37,12 +54,13 @@ function OrdersPage() {
       setOrders([]);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
   const updateOrderStatus = async (orderId, newStatus) => {
     try {
-      const response = await fetch(`/api/orders/${orderId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/orders/${orderId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -138,6 +156,14 @@ function OrdersPage() {
     return null;
   };
 
+  if (authLoading) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <div className="text-lg text-gray-600">Loading user profile...</div>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="flex justify-center items-center py-12">
@@ -152,8 +178,17 @@ function OrdersPage() {
         <h2 className="text-2xl font-bold text-gray-900">
           📋 {isVendor ? "My Orders" : "Orders to Fulfill"}
         </h2>
-        <div className="text-sm text-gray-600">
-          Total: {orders.length} orders
+        <div className="flex items-center space-x-4">
+          <div className="text-sm text-gray-600">
+            Total: {orders.length} orders
+          </div>
+          <button
+            onClick={() => fetchOrders(true)}
+            disabled={refreshing}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+          >
+            {refreshing ? "🔄 Refreshing..." : "🔄 Refresh"}
+          </button>
         </div>
       </div>
 
@@ -186,6 +221,7 @@ function OrdersPage() {
         {orders.length === 0 ? (
           <div className="p-8 text-center text-gray-500">
             <p>No orders found.</p>
+
           </div>
         ) : (
           <div className="divide-y divide-gray-200">

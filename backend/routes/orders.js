@@ -7,6 +7,27 @@ const mockOrders = [
   {
     id: "order_1",
     orderNumber: "ORD-1753522000001",
+    vendorId: "hsueTWnxUhUHKanHMSqsF1wuyF22", // Add your actual vendor ID here
+    vendorName: "Test Vendor",
+    supplierId: "supplier_1",
+    supplierName: "Fresh Vegetables Hub",
+    items: [
+      {
+        itemId: "item_1",
+        itemName: "Fresh Tomatoes",
+        quantity: 50,
+        unitPrice: 40,
+        total: 2000,
+      },
+    ],
+    totalAmount: 2000,
+    status: "pending",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: "order_2",
+    orderNumber: "ORD-1753522000001",
     vendorId: "vendor_1",
     vendorName: "Test Vendor",
     supplierId: "supplier_1",
@@ -52,19 +73,30 @@ const mockOrders = [
 router.get("/", async (req, res) => {
   try {
     const { vendorId, supplierId } = req.query;
+    console.log("[Orders GET] Query params:", { vendorId, supplierId });
 
     // Try Firebase first, fallback to mock data
     try {
-      let query = db.collection("orders").orderBy("createdAt", "desc");
+      let query = db.collection("orders");
 
       if (vendorId) {
         query = query.where("vendorId", "==", vendorId);
       }
 
+      // Get all documents first, then sort in memory to avoid index requirements
+      const snapshot = await query.get();
+      let orders = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      // Sort by createdAt in memory
+      orders = orders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
       if (supplierId) {
         // For suppliers, we need to check if any items in the order are from this supplier
-        const snapshot = await db.collection("orders").get();
-        const orders = snapshot.docs
+        const supplierSnapshot = await db.collection("orders").get();
+        const supplierOrders = supplierSnapshot.docs
           .map((doc) => ({ id: doc.id, ...doc.data() }))
           .filter(
             (order) =>
@@ -74,16 +106,12 @@ router.get("/", async (req, res) => {
           .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         return res.status(200).json({
           success: true,
-          data: orders,
-          total: orders.length,
+          data: supplierOrders,
+          total: supplierOrders.length,
         });
       }
 
-      const snapshot = await query.get();
-      const orders = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+      console.log("[Orders GET] Firebase orders found:", orders.length);
       res.status(200).json({
         success: true,
         data: orders,
@@ -151,6 +179,8 @@ router.post("/", async (req, res) => {
       status: req.body.status || "pending",
       orderNumber: `ORD-${Date.now()}`,
     };
+
+
 
     // Start a Firestore transaction to ensure data consistency
     const result = await db.runTransaction(async (transaction) => {
@@ -266,5 +296,7 @@ router.delete("/:id", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+
 
 module.exports = router;
