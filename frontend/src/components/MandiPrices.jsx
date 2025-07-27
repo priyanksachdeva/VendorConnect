@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import API_BASE_URL from "../config/api";
 
 const MandiPrices = () => {
   const [mandiData, setMandiData] = useState([]);
@@ -14,7 +15,7 @@ const MandiPrices = () => {
     try {
       const url = selectedCommodity
         ? `${API_BASE_URL}/mandi?commodity=${selectedCommodity}`
-        : "http://localhost:5000/mandi";
+        : `${API_BASE_URL}/mandi`;
 
       const response = await axios.get(url);
       setMandiData(response.data.data);
