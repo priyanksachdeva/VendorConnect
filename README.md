@@ -374,5 +374,5 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 <div align="center">
   <b>Made with ❤️ for empowering street vendors across India</b><br/>
-  <i>VendorConnect - Bridging the gap between vendors and suppliers, one connection at a time.</i>
+  <i>VendorConnect - Bridging the gap between vendors and suppliers, one connection at a time</i>
 </div>
