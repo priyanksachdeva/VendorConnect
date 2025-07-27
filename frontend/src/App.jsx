@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
-import LoginPage from "./pages/LoginPage";
+import LoginPageWithHero from "./pages/LoginPageWithHero";
 import VendorMarketplace from "./pages/VendorMarketplace";
 import SupplierInventory from "./pages/SupplierInventory";
 import OrdersPage from "./pages/OrdersPage";
@@ -10,11 +10,22 @@ import SmartInventoryTracker from "./components/SmartInventoryTracker";
 import PriceAlerts from "./components/PriceAlerts";
 import FeaturesDemo from "./pages/FeaturesDemo";
 import Community from "./components/Community";
+import { GooeyText } from "./components/ui/gooey-text-morphing";
+import { doc, setDoc } from "firebase/firestore";
+import { db } from "./firebase/config";
 
 // Simple working components for general pages
 function MainApp() {
   const { user, userProfile, logout, isVendor, isSupplier } = useAuth();
   const [tab, setTab] = useState(isVendor ? "marketplace" : "inventory");
+
+  console.log("MainApp Debug:", {
+    user: !!user,
+    userProfile,
+    isVendor,
+    isSupplier,
+    userType: userProfile?.userType,
+  });
 
   const handleLogout = async () => {
     try {
@@ -23,6 +34,88 @@ function MainApp() {
       console.error("Logout failed:", error);
     }
   };
+
+  // If user is logged in but no profile exists, show a message
+  if (user && !userProfile) {
+    const createMissingProfile = async (selectedUserType) => {
+      try {
+        // Create a profile with the selected user type
+        await setDoc(doc(db, "users", user.uid), {
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName || user.email,
+          userType: selectedUserType,
+          businessName:
+            user.displayName || user.email?.split("@")[0] || "My Business",
+          contactNumber: "",
+          address: "",
+          createdAt: new Date().toISOString(),
+          loginMethod: "google",
+        });
+
+        // Refresh the page to reload the profile
+        window.location.reload();
+      } catch (error) {
+        console.error("Error creating profile:", error);
+      }
+    };
+
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-center bg-white p-8 rounded-lg shadow-lg max-w-md w-full mx-4">
+          <div className="text-xl text-gray-600 mb-4">
+            Complete Your Profile
+          </div>
+          <div className="text-sm text-gray-500 mb-6">
+            User: {user.email || user.displayName}
+          </div>
+
+          <div className="mb-6">
+            <div className="grid grid-cols-1 gap-3 mb-4">
+              <button
+                onClick={() => createMissingProfile("vendor")}
+                className="p-4 rounded-lg border border-blue-200 hover:bg-blue-50 transition-all text-left"
+              >
+                <div className="flex items-center">
+                  <span className="text-2xl mr-3">🛒</span>
+                  <div>
+                    <div className="font-medium text-blue-700">
+                      Street Vendor
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      I sell products directly to customers
+                    </div>
+                  </div>
+                </div>
+              </button>
+
+              <button
+                onClick={() => createMissingProfile("supplier")}
+                className="p-4 rounded-lg border border-green-200 hover:bg-green-50 transition-all text-left"
+              >
+                <div className="flex items-center">
+                  <span className="text-2xl mr-3">🏭</span>
+                  <div>
+                    <div className="font-medium text-green-700">Supplier</div>
+                    <div className="text-sm text-gray-500">
+                      I supply products to vendors
+                    </div>
+                  </div>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <button
+            onClick={handleLogout}
+            className="w-full px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+          >
+            Logout
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // Define navigation items based on user role
   const getNavItems = () => {
@@ -57,12 +150,18 @@ function MainApp() {
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-gray-900">
-                VendorConnect
-              </h1>
-              <span className="ml-2 text-sm text-gray-500">
-                Vendor Management Platform
-              </span>
+              <div className="h-16 flex items-center">
+                <GooeyText
+                  texts={[
+                    "VendorConnect",
+                    "Marketplace",
+                    "Community",
+                    "Growth",
+                  ]}
+                  morphTime={1.2}
+                  cooldownTime={0.8}
+                />
+              </div>
             </div>
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-3">
@@ -163,7 +262,7 @@ function AppContent() {
   }
 
   if (!user) {
-    return <LoginPage />;
+    return <LoginPageWithHero />;
   }
 
   return <MainApp />;

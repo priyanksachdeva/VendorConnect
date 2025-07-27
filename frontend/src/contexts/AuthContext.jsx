@@ -8,7 +8,7 @@ import {
   GoogleAuthProvider,
 } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
-import { auth, googleProvider, db } from "../config/firebase";
+import { auth, db } from "../firebase/config";
 
 const AuthContext = createContext();
 
@@ -106,11 +106,7 @@ export const AuthProvider = ({ children }) => {
     isSupplier: userProfile?.userType === "supplier",
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {!loading && children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export default AuthContext;

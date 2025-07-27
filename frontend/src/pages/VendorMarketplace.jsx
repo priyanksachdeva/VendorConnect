@@ -2,7 +2,15 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { motion } from "framer-motion";
 import { db } from "../firebase/config";
-import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+  orderBy,
+  doc,
+  getDoc,
+} from "firebase/firestore";
 import API_BASE_URL from "../config/api";
 import toast from "react-hot-toast";
 import {
@@ -127,6 +135,9 @@ function VendorMarketplace() {
         const querySnapshot = await getDocs(q);
         let marketplaceItems = [];
 
+        // Create a map to store supplier contact info
+        const supplierContactInfo = new Map();
+
         querySnapshot.forEach((doc) => {
           const data = doc.data();
           marketplaceItems.push({
@@ -148,6 +159,68 @@ function VendorMarketplace() {
               data.lastUpdated?.toDate?.()?.toISOString() || data.lastUpdated,
           });
         });
+
+        // Fetch supplier contact information for all unique suppliers
+        const uniqueSupplierIds = [
+          ...new Set(
+            marketplaceItems.map((item) => item.supplierId).filter(Boolean)
+          ),
+        ];
+
+        if (uniqueSupplierIds.length > 0) {
+          try {
+            const supplierPromises = uniqueSupplierIds.map(
+              async (supplierId) => {
+                const userDoc = await getDoc(doc(db, "users", supplierId));
+                if (userDoc.exists()) {
+                  const userData = userDoc.data();
+                  return {
+                    id: supplierId,
+                    contactNumber: userData.contactNumber || null,
+                    businessName: userData.businessName || userData.displayName,
+                    address: userData.address || null,
+                  };
+                }
+                return {
+                  id: supplierId,
+                  contactNumber: null,
+                  businessName: null,
+                  address: null,
+                };
+              }
+            );
+
+            const supplierContacts = await Promise.all(supplierPromises);
+            supplierContacts.forEach((contact) => {
+              if (contact.id) {
+                supplierContactInfo.set(contact.id, contact);
+              }
+            });
+
+            // Add contact info to marketplace items
+            marketplaceItems = marketplaceItems.map((item) => {
+              const contactInfo = supplierContactInfo.get(item.supplierId);
+              return {
+                ...item,
+                supplierPhone: contactInfo?.contactNumber || null,
+                supplierAddress: contactInfo?.address || null,
+                supplierBusinessName:
+                  contactInfo?.businessName || item.supplierName,
+              };
+            });
+
+            console.log(
+              "🔍 Fetched contact info for suppliers:",
+              supplierContactInfo.size
+            );
+          } catch (contactError) {
+            console.log(
+              "Could not fetch supplier contact info:",
+              contactError.message
+            );
+            // Continue without contact info if there's an error
+          }
+        }
 
         // Apply search filter in memory
         if (searchTerm) {
@@ -174,7 +247,7 @@ function VendorMarketplace() {
         }
 
         console.log(
-          `🛒 Loaded ${marketplaceItems.length} marketplace items from Firestore`
+          `🛒 Loaded ${marketplaceItems.length} marketplace items from Firestore with supplier contacts`
         );
         setItems(marketplaceItems);
         return;
@@ -280,14 +353,19 @@ function VendorMarketplace() {
 
     setLoading(true);
     try {
+      // Get vendor contact information
+      const vendorPhone = userProfile?.contactNumber || null;
+
       const orderData = {
         vendorId: user.uid,
         vendorName: userProfile?.businessName || user.displayName,
+        vendorPhone: vendorPhone,
         items: cart.map((item) => ({
           itemId: item.id,
           itemName: item.name,
           supplierId: item.supplierId,
           supplierName: item.supplierName,
+          supplierPhone: item.supplierPhone || null,
           quantity: item.quantity,
           price: item.price,
           unit: item.unit,
@@ -825,6 +903,12 @@ function VendorMarketplace() {
                               <p className="text-sm text-gray-500">
                                 By: {item.supplierName}
                               </p>
+                              {item.supplierPhone && (
+                                <p className="text-xs text-green-600 flex items-center">
+                                  <span className="mr-1">📞</span>
+                                  <span>{item.supplierPhone}</span>
+                                </p>
+                              )}
                             </div>
                             <div className="flex items-center space-x-3">
                               <Button
@@ -1048,6 +1132,12 @@ function ProductCard({ item, onAddToCart }) {
               <span className="font-medium text-secondary-600">
                 {item.supplierName}
               </span>
+              {item.supplierPhone && (
+                <div className="flex items-center text-xs text-green-600 mt-1">
+                  <span className="mr-1">📞</span>
+                  <span>{item.supplierPhone}</span>
+                </div>
+              )}
               <button
                 onClick={() => setShowReviews(true)}
                 className="text-xs text-blue-600 hover:text-blue-800 hover:underline mt-1"

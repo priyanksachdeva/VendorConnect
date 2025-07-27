@@ -196,14 +196,29 @@ function OrdersPage() {
                     <h4 className="text-lg font-medium text-gray-900">
                       Order #{order.id?.slice(-8)}
                     </h4>
-                    <p className="text-sm text-gray-600">
-                      {isVendor
-                        ? `To: ${order.supplierName}`
-                        : `From: ${order.vendorName}`}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Placed: {new Date(order.createdAt).toLocaleDateString()}
-                    </p>
+                    <div className="space-y-1 text-sm text-gray-600">
+                      <p>
+                        {isVendor
+                          ? `To: ${order.supplierName}`
+                          : `From: ${order.vendorName}`}
+                      </p>
+                      {/* Show contact information based on user role */}
+                      {isVendor && order.items?.[0]?.supplierPhone && (
+                        <p className="flex items-center text-green-600">
+                          <span className="mr-1">📞</span>
+                          <span>{order.items[0].supplierPhone}</span>
+                        </p>
+                      )}
+                      {isSupplier && order.vendorPhone && (
+                        <p className="flex items-center text-green-600">
+                          <span className="mr-1">📞</span>
+                          <span>{order.vendorPhone}</span>
+                        </p>
+                      )}
+                      <p>
+                        Placed: {new Date(order.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
                   </div>
                   <div className="text-right">
                     <span

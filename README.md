@@ -1,144 +1,135 @@
-# 🛒 VendorConnect
+<div align="center">
+  <h1>🛒 VendorConnect</h1>
+  <p><b>Empowering street vendors with a digital marketplace and community</b></p>
+  <p>
+    <img src="https://img.shields.io/badge/Frontend-React%2019-61dafb.svg" />
+    <img src="https://img.shields.io/badge/Backend-Node.js-339933.svg" />
+    <img src="https://img.shields.io/badge/Database-Firebase%20Firestore-ffca28.svg" />
+    <img src="https://img.shields.io/badge/Styling-Tailwind%20CSS-38b2ac.svg" />
+  </p>
+  <img src="https://user-images.githubusercontent.com/placeholder/demo.gif" width="80%" alt="VendorConnect Demo"/>
+</div>
 
-**A modern platform connecting street vendors with trusted suppliers and building community networks**
+---
 
-[![Built with React](https://img.shields.io/badge/Frontend-React%2019-61dafb.svg)](https://reactjs.org/)
-[![Built with Node.js](https://img.shields.io/badge/Backend-Node.js-339933.svg)](https://nodejs.org/)
-[![Database](https://img.shields.io/badge/Database-Firebase%20Firestore-ffca28.svg)](https://firebase.google.com/)
-[![Styled with Tailwind](https://img.shields.io/badge/Styling-Tailwind%20CSS-38b2ac.svg)](https://tailwindcss.com/)
+<details>
+<summary><b>🎯 Problem Statement</b></summary>
 
-## 🎯 Problem Statement
+Street vendors face:
 
-Street vendors face significant challenges in their daily operations:
+- 💰 <b>High Raw Material Costs</b> (no wholesale access)
+- 🤝 <b>Trust Issues</b> (finding reliable suppliers)
+- 🏝️ <b>Isolation</b> (no community or support)
+- 📊 <b>Market Ignorance</b> (no real-time rates)
 
-- **💰 High Raw Material Costs** - Limited access to wholesale pricing
-- **🤝 Trust Issues** - Difficulty finding reliable, quality suppliers
-- **🏝️ Isolated Operations** - Lack of community support and knowledge sharing
-- **📊 Market Ignorance** - No access to real-time market rates and trends
+</details>
 
-## 🚀 Our Solution
+---
 
-VendorConnect addresses these challenges through a comprehensive digital platform that empowers street vendors with:
+## 🚀 What is VendorConnect?
 
-### 🔑 Core Features
+<b>VendorConnect</b> is a one-stop digital platform for street vendors to:
 
-- **🔐 Secure Authentication** - Firebase Auth with Google OAuth integration
-- **🌾 Live Market Rates** - Real-time mandi prices via Agmarknet API
-- **🗺️ Supplier Discovery** - Google Maps integration with location-based search
-- **📦 Inventory Management** - Smart stock tracking and order management
-- **💬 Community Platform** - Interactive discussion boards and knowledge sharing
-- **🏪 Digital Marketplace** - Connect directly with verified suppliers
+### 🔑 Features
 
-### ⚡ Technical Highlights
+| �   | <b>Feature</b>     | <b>Description</b>              |
+| --- | ------------------ | ------------------------------- |
+| 🔐  | Secure Auth        | Google login, role-based access |
+| 🌾  | Live Rates         | Real-time mandi prices          |
+| 🗺️  | Supplier Discovery | Location-based search           |
+| 📦  | Inventory          | Smart stock & order management  |
+| 💬  | Community          | Discussion boards, Q&A          |
+| 🏪  | Marketplace        | Buy directly from suppliers     |
 
-- **Responsive Design** - Mobile-first approach for on-the-go vendors
-- **Real-time Data** - Live updates for prices and inventory
-- **Secure Transactions** - Firebase security rules and authentication
-- **Scalable Architecture** - Modern React with efficient state management
-- **API Integration** - External data sources for market intelligence
+---
+
+### ⚡ Tech Highlights
+
+- 📱 <b>Mobile-first</b> responsive UI
+- 🔄 <b>Real-time</b> data & updates
+- 🔒 <b>Secure</b> transactions (Firebase rules)
+- ⚡ <b>Fast</b> React + Vite + Tailwind
+- 🔌 <b>API Integration</b> (Agmarknet, Firebase)
+
+---
 
 ## 🛠️ Tech Stack
 
-### Frontend
+<details>
+<summary>Click to expand</summary>
 
-- **React 19** - Latest React with improved performance
-- **Vite** - Lightning-fast build tool and dev server
-- **Tailwind CSS** - Utility-first CSS framework
-- **Framer Motion** - Smooth animations and transitions
-- **Headless UI** - Accessible UI components
+**Frontend:** React 19, Vite, Tailwind CSS, Framer Motion, Headless UI
 
-### Backend
+**Backend:** Node.js, Express.js, Firebase Admin SDK
 
-- **Node.js** - JavaScript runtime
-- **Express.js** - Web application framework
-- **Firebase Admin SDK** - Server-side Firebase integration
+**Database:** Firebase Firestore, Firebase Auth
 
-### Database & Services
+**APIs:** Agmarknet
 
-- **Firebase Firestore** - NoSQL document database
-- **Firebase Authentication** - User management and security
-- **Google Maps API** - Location services and mapping
-- **Agmarknet API** - Agricultural market data
+</details>
 
-## 🚀 Quick Start
+---
 
-### Prerequisites
+## ⚡ Quick Start (in 3 minutes!)
 
-- **Node.js** v20.0.0 or higher
-- **npm** or **yarn** package manager
-- **Firebase Project** with Firestore enabled
-- **Google Cloud Project** with Maps API enabled
+<b>Prerequisites:</b>
 
-### 1. Clone Repository
+- Node.js v20+
+- npm or yarn
+- Firebase project (Firestore enabled)
 
-```bash
+```sh
+# 1. Clone
 git clone https://github.com/your-username/VendorConnect.git
 cd VendorConnect
 ```
 
-### 2. Backend Setup
-
-```bash
+```sh
+# 2. Backend
 cd backend
 npm install
-
-# Copy environment template
-cp .env.example .env
-
-# Configure your environment variables in .env:
-# - Firebase project credentials
-# - Google Maps API key
-# - Other service keys
+cp .env.example .env  # Edit with your Firebase keys
 ```
 
-### 3. Frontend Setup
-
-```bash
+```sh
+# 3. Frontend
 cd ../frontend
 npm install
-
-# Configure Firebase config in src/config/firebase.js
+# Edit src/config/firebase.js with your config
 ```
 
-### 4. Firebase Configuration
+<details>
+<summary>Firebase Setup (click for details)</summary>
 
-1. Create a Firebase project at [Firebase Console](https://console.firebase.google.com/)
-2. Enable **Firestore Database** and **Authentication**
-3. Enable **Google Sign-in** in Authentication providers
-4. Download service account key for backend
-5. Get web app config for frontend
+1. Create project at [Firebase Console](https://console.firebase.google.com/)
+2. Enable Firestore & Authentication
+3. Enable Google Sign-in
+4. Download service account key (backend)
+5. Get web app config (frontend)
 
-Detailed setup instructions: [FIREBASE_SETUP.md](./FIREBASE_SETUP.md)
+See [FIREBASE_SETUP.md](./FIREBASE_SETUP.md) for full guide.
 
-### 5. Google Maps Setup
+</details>
 
-1. Create project at [Google Cloud Console](https://console.cloud.google.com/)
-2. Enable **Maps JavaScript API** and **Places API**
-3. Create API key and add to environment variables
-4. Configure API key restrictions for security
-
-### 6. Initialize Database
-
-```bash
+```sh
+# 4. (Optional) Initialize sample data
 cd backend
 npm run init-db
 ```
 
-### 7. Start Development Servers
-
-```bash
-# Terminal 1 - Backend (runs on port 5000)
-cd backend
-npm run dev
-
-# Terminal 2 - Frontend (runs on port 5173)
-cd frontend
-npm run dev
+```sh
+# 5. Start Dev Servers (in 2 terminals)
+# Terminal 1
+cd backend && npm run dev
+# Terminal 2
+cd frontend && npm run dev
 ```
 
-Visit `http://localhost:5173` to see the application!
+Open [http://localhost:5173](http://localhost:5173) 🚀
 
-## 📁 Project Structure
+---
+
+## �️ Project Structure
 
 ```
 VendorConnect/
@@ -164,7 +155,9 @@ VendorConnect/
 └── 📄 .gitignore          # Git ignore rules
 ```
 
-## 🔧 Available Scripts
+---
+
+## �️ Scripts
 
 ### Backend Scripts
 
@@ -183,7 +176,9 @@ npm run build      # Build for production
 npm run preview    # Preview production build
 ```
 
-## 🌟 Key Features Walkthrough
+---
+
+## 🌟 Features Walkthrough
 
 ### 1. Authentication System
 
@@ -215,6 +210,8 @@ npm run preview    # Preview production build
 - **Knowledge Sharing** through posts and replies
 - **Vendor Networking** and collaboration
 
+---
+
 ## 🔐 Environment Variables
 
 ### Backend (.env)
@@ -231,8 +228,6 @@ FIREBASE_AUTH_URI=https://accounts.google.com/o/oauth2/auth
 FIREBASE_TOKEN_URI=https://oauth2.googleapis.com/token
 FIREBASE_AUTH_PROVIDER_X509_CERT_URL=https://www.googleapis.com/oauth2/v1/certs
 
-# API Keys
-GOOGLE_MAPS_API_KEY=your-google-maps-api-key
 
 # Server Configuration
 PORT=5000
@@ -251,6 +246,8 @@ export const firebaseConfig = {
   appId: "your-app-id",
 };
 ```
+
+---
 
 ## 🚀 Deployment
 
@@ -292,6 +289,8 @@ service cloud.firestore {
 }
 ```
 
+---
+
 ## 🤝 Contributing
 
 We welcome contributions! Please see our contributing guidelines:
@@ -310,20 +309,25 @@ We welcome contributions! Please see our contributing guidelines:
 - Test your changes thoroughly
 - Update documentation as needed
 
-## 📱 Browser Support
+---
+
+## 🌐 Browser Support
 
 - **Chrome** 88+
 - **Firefox** 85+
 - **Safari** 14+
 - **Edge** 88+
 
-## 🐛 Known Issues
+---
 
-- **Maps API** rate limiting on free tier
+## � Known Issues
+
 - **Real-time updates** require websocket implementation for true real-time
 - **Offline support** not yet implemented
 
-## 📋 Roadmap
+---
+
+## �️ Roadmap
 
 - [ ] **Mobile App** (React Native)
 - [ ] **Payment Integration** (Razorpay/Stripe)
@@ -334,9 +338,13 @@ We welcome contributions! Please see our contributing guidelines:
 - [ ] **Bulk Ordering** system
 - [ ] **Vendor Reviews** and ratings
 
+---
+
 ## 📄 License
 
 This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+
+---
 
 ## 👥 Team
 
@@ -345,22 +353,26 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 - **Database Design** - Firebase, Security
 - **Integration** - External APIs, Maps
 
+---
+
 ## 📞 Support
 
 - 📧 **Email**: support@vendorconnect.com
 - 🐛 **Issues**: [GitHub Issues](https://github.com/your-username/VendorConnect/issues)
 - 📖 **Documentation**: [Wiki](https://github.com/your-username/VendorConnect/wiki)
 
+---
+
 ## 🙏 Acknowledgments
 
 - **Firebase** for backend infrastructure
-- **Google Maps** for location services
 - **Agmarknet** for market data
 - **Tailwind CSS** for beautiful styling
 - **React Community** for excellent ecosystem
 
 ---
 
-**Made with ❤️ for empowering street vendors across India**
-
-_VendorConnect - Bridging the gap between vendors and suppliers, one connection at a time._
+<div align="center">
+  <b>Made with ❤️ for empowering street vendors across India</b><br/>
+  <i>VendorConnect - Bridging the gap between vendors and suppliers, one connection at a time.</i>
+</div>

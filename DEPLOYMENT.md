@@ -1,12 +1,16 @@
-# VendorConnect Deployment Guide
+<div align="center">
+  <h1>🚀 VendorConnect Deployment Guide</h1>
+  <p>Get your marketplace live in minutes!</p>
+</div>
 
-## 🚀 Quick Deploy Commands
+---
 
-### Option 1: Vercel (Frontend) + Railway (Backend)
+## ⚡ Quick Deploy (Choose your stack)
 
-**Frontend to Vercel:**
+### 🌐 Vercel (Frontend) + 🚂 Railway (Backend)
 
-```bash
+```sh
+# Deploy Frontend
 npm i -g vercel
 cd frontend
 npm run build
@@ -18,28 +22,28 @@ vercel --prod
 1. Connect GitHub repo to railway.app
 2. Select backend folder
 3. Add environment variables
-4. Deploy automatically
+4. Deploy 🚀
 
-### Option 2: Netlify (Frontend) + Render (Backend)
+### 🌍 Netlify (Frontend) + 🟣 Render (Backend)
 
-**Frontend to Netlify:**
-
-```bash
+```sh
 cd frontend
 npm run build
-# Drag & drop dist/ folder to netlify.com
+# Drag & drop dist/ to netlify.com
 ```
 
 **Backend to Render:**
 
 1. Connect GitHub repo to render.com
 2. Choose "Web Service"
-3. Set build command: `npm install`
-4. Set start command: `npm start`
+3. Build: `npm install`
+4. Start: `npm start`
 
-## 📋 Environment Variables Checklist
+---
 
-### Frontend
+## 📋 Environment Variables
+
+### Frontend (.env)
 
 - [ ] `VITE_API_URL` - Your backend URL
 - [ ] `VITE_FIREBASE_API_KEY`
@@ -48,9 +52,8 @@ npm run build
 - [ ] `VITE_FIREBASE_STORAGE_BUCKET`
 - [ ] `VITE_FIREBASE_MESSAGING_SENDER_ID`
 - [ ] `VITE_FIREBASE_APP_ID`
-- [ ] `VITE_GOOGLE_MAPS_API_KEY`
 
-### Backend
+### Backend (.env)
 
 - [ ] `NODE_ENV=production`
 - [ ] `PORT=5000`
@@ -64,6 +67,8 @@ npm run build
 - [ ] `FIREBASE_TOKEN_URI`
 - [ ] `FIREBASE_AUTH_PROVIDER_X509_CERT_URL`
 
+---
+
 ## 🔧 Pre-Deployment Checklist
 
 - [ ] Remove console.log statements
@@ -73,6 +78,8 @@ npm run build
 - [ ] Verify all environment variables
 - [ ] Check API rate limits
 - [ ] Set up domain (optional)
+
+---
 
 ## 🌐 Custom Domain Setup
 
@@ -88,7 +95,9 @@ npm run build
 2. Add custom domain
 3. Update nameservers
 
-## 📊 Cost Estimates
+---
+
+## � Cost Estimates
 
 ### Free Tier
 
