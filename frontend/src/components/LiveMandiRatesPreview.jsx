@@ -1,19 +1,20 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import API_BASE_URL from "../config/api";
 
 function LiveMandiRatesPreview() {
   const [rates, setRates] = useState([]);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     axios
-      .get("http://localhost:5000/mandi")
+      .get(`${API_BASE_URL}/mandi`)
       .then((res) => {
         if (res.data && res.data.data && res.data.data.length > 0) {
           setRates(res.data.data.slice(0, 4));
         } else {
           // fallback to /api/mandi if /mandi returns no data
           axios
-            .get("http://localhost:5000/api/mandi")
+            .get(`${API_BASE_URL}/api/mandi`)
             .then((res2) => {
               setRates(res2.data.data.slice(0, 4));
               setLoading(false);
@@ -26,7 +27,7 @@ function LiveMandiRatesPreview() {
       .catch(() => {
         // fallback to /api/mandi if /mandi fails
         axios
-          .get("http://localhost:5000/api/mandi")
+          .get(`${API_BASE_URL}/api/mandi`)
           .then((res2) => {
             setRates(res2.data.data.slice(0, 4));
             setLoading(false);

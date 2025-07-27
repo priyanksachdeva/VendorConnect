@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import API_BASE_URL from "../config/api";
 import { motion } from "framer-motion";
 import { Button, Card, Input, Badge } from "./ui";
 import { useAuth } from "../contexts/AuthContext";
@@ -30,7 +31,7 @@ function PriceAlerts() {
     if (!user) return;
     try {
       const response = await fetch(
-        `http://localhost:5000/api/price-alerts?userId=${user.uid}`
+        `${API_BASE_URL}/api/price-alerts?userId=${user.uid}`
       );
       if (response.ok) {
         const data = await response.json();
@@ -46,7 +47,7 @@ function PriceAlerts() {
     try {
       // Get user's order history to suggest frequently bought items
       const response = await fetch(
-        `http://localhost:5000/api/orders?userId=${user.uid}&limit=50`
+        `${API_BASE_URL}/api/orders?userId=${user.uid}&limit=50`
       );
       if (response.ok) {
         const orders = await response.json();
@@ -74,16 +75,13 @@ function PriceAlerts() {
     if (!user || alerts.length === 0) return;
 
     try {
-      const response = await fetch(
-        "http://localhost:5000/api/price-alerts/check",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ userId: user.uid }),
-        }
-      );
+      const response = await fetch(`${API_BASE_URL}/api/price-alerts/check`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId: user.uid }),
+      });
 
       if (response.ok) {
         const triggeredAlerts = await response.json();
@@ -126,7 +124,7 @@ function PriceAlerts() {
         createdAt: new Date().toISOString(),
       };
 
-      const response = await fetch("http://localhost:5000/api/price-alerts", {
+      const response = await fetch(`${API_BASE_URL}/api/price-alerts`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -160,7 +158,7 @@ function PriceAlerts() {
   const toggleAlert = async (alertId, isActive) => {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/price-alerts/${alertId}`,
+        `${API_BASE_URL}/api/price-alerts/${alertId}`,
         {
           method: "PATCH",
           headers: {
@@ -191,7 +189,7 @@ function PriceAlerts() {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/price-alerts/${alertId}`,
+        `${API_BASE_URL}/api/price-alerts/${alertId}`,
         {
           method: "DELETE",
         }

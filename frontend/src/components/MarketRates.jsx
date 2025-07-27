@@ -182,7 +182,7 @@ function MarketRates() {
           proxyParams.append("commodity", selectedCommodity);
         }
 
-        apiUrl = `http://localhost:5000/api/market-rates?${proxyParams.toString()}`;
+        apiUrl = `${API_BASE_URL}/api/market-rates?${proxyParams.toString()}`;
         console.log("Trying backend proxy:", apiUrl);
 
         response = await fetch(apiUrl, {

@@ -71,7 +71,7 @@ export default function Marketplace() {
 
   const fetchSuppliers = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/suppliers");
+      const response = await axios.get(`${API_BASE_URL}/suppliers`);
       setSuppliers(response.data);
       setLoading(false);
     } catch (error) {
@@ -83,7 +83,7 @@ export default function Marketplace() {
   const fetchCategories = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:5000/suppliers/meta/categories"
+        `${API_BASE_URL}/suppliers/meta/categories`
       );
       setCategories(response.data);
     } catch (error) {

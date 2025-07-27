@@ -24,7 +24,7 @@ export default function Orders() {
     if (!user) return;
     try {
       const response = await fetch(
-        `http://localhost:5000/api/orders?vendorId=${user.uid}`
+        `${API_BASE_URL}/api/orders?vendorId=${user.uid}`
       );
       if (response.ok) {
         const result = await response.json();
@@ -48,16 +48,13 @@ export default function Orders() {
 
   const updateOrderStatus = async (orderId, newStatus) => {
     try {
-      const response = await fetch(
-        `http://localhost:5000/api/orders/${orderId}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ status: newStatus }),
-        }
-      );
+      const response = await fetch(`${API_BASE_URL}/api/orders/${orderId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
 
       if (response.ok) {
         fetchOrders();

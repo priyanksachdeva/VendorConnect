@@ -25,7 +25,7 @@ export default function Inventory() {
 
   const fetchInventory = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/inventory");
+      const response = await axios.get(`${API_BASE_URL}/inventory`);
       setInventory(response.data);
       setLoading(false);
     } catch (error) {
@@ -36,7 +36,7 @@ export default function Inventory() {
 
   const fetchStats = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/inventory/stats");
+      const response = await axios.get(`${API_BASE_URL}/inventory/stats`);
       setStats(response.data);
     } catch (error) {
       console.error("Error fetching stats:", error);
@@ -68,7 +68,7 @@ export default function Inventory() {
 
   const updateQuantity = async (id, newQuantity) => {
     try {
-      await axios.patch(`http://localhost:5000/inventory/${id}/quantity`, {
+      await axios.patch(`${API_BASE_URL}/inventory/${id}/quantity`, {
         quantity: newQuantity,
         reason: "Manual adjustment",
       });

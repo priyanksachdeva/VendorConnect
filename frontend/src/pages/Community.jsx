@@ -19,7 +19,7 @@ export default function Community() {
 
   const fetchPosts = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/community");
+      const response = await fetch(`${API_BASE_URL}/api/community`);
       if (response.ok) {
         const data = await response.json();
         setPosts(data);
@@ -38,7 +38,7 @@ export default function Community() {
   const handleCreatePost = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch("http://localhost:5000/api/community", {
+      const response = await fetch(`${API_BASE_URL}/api/community`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -183,7 +183,7 @@ function Community() {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/community/${postId}/upvote`,
+        `${API_BASE_URL}/api/community/${postId}/upvote`,
         {
           method: "POST",
           headers: {
@@ -226,7 +226,7 @@ function Community() {
       };
 
       const response = await fetch(
-        `http://localhost:5000/api/community/${postId}/replies`,
+        `${API_BASE_URL}/api/community/${postId}/replies`,
         {
           method: "POST",
           headers: {

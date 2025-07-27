@@ -31,7 +31,7 @@ function SmartInventoryTracker() {
     if (!user) return;
     try {
       const response = await fetch(
-        `http://localhost:5000/api/smart-inventory?userId=${user.uid}`
+        `${API_BASE_URL}/api/smart-inventory?userId=${user.uid}`
       );
       if (response.ok) {
         const data = await response.json();
@@ -46,7 +46,7 @@ function SmartInventoryTracker() {
     if (!user) return;
     try {
       const response = await fetch(
-        `http://localhost:5000/api/smart-inventory/alerts?userId=${user.uid}`
+        `${API_BASE_URL}/api/smart-inventory/alerts?userId=${user.uid}`
       );
       if (response.ok) {
         const data = await response.json();
@@ -107,16 +107,13 @@ function SmartInventoryTracker() {
         lastUpdated: new Date().toISOString(),
       };
 
-      const response = await fetch(
-        "http://localhost:5000/api/smart-inventory",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(itemData),
-        }
-      );
+      const response = await fetch(`${API_BASE_URL}/api/smart-inventory`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(itemData),
+      });
 
       if (response.ok) {
         toast.success("Item added to smart inventory! 📦");
@@ -151,7 +148,7 @@ function SmartInventoryTracker() {
   ) => {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/smart-inventory/${itemId}/stock`,
+        `${API_BASE_URL}/api/smart-inventory/${itemId}/stock`,
         {
           method: "PATCH",
           headers: {

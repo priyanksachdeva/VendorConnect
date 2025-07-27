@@ -13,7 +13,7 @@ const MandiPrices = () => {
   const fetchMandiPrices = async () => {
     try {
       const url = selectedCommodity
-        ? `http://localhost:5000/mandi?commodity=${selectedCommodity}`
+        ? `${API_BASE_URL}/mandi?commodity=${selectedCommodity}`
         : "http://localhost:5000/mandi";
 
       const response = await axios.get(url);

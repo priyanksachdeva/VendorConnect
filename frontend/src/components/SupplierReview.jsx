@@ -27,9 +27,8 @@ function SupplierReview({ supplierId, supplierName, onReviewAdded }) {
     try {
       setFetchingReviews(true);
       const response = await fetch(
-        `http://localhost:5000/api/reviews/${supplierId}/reviews?limit=20`
+        `${API_BASE_URL}/api/reviews/${supplierId}/reviews?limit=20`
       );
-
       if (response.ok) {
         const data = await response.json();
         setReviews(data.data || []);
@@ -62,7 +61,7 @@ function SupplierReview({ supplierId, supplierName, onReviewAdded }) {
       };
 
       const response = await fetch(
-        `http://localhost:5000/api/reviews/${supplierId}/reviews`,
+        `${API_BASE_URL}/api/reviews/${supplierId}/reviews`,
         {
           method: "POST",
           headers: {
@@ -97,7 +96,7 @@ function SupplierReview({ supplierId, supplierName, onReviewAdded }) {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/reviews/${supplierId}/reviews/${reviewId}/helpful`,
+        `${API_BASE_URL}/api/reviews/${supplierId}/reviews/${reviewId}/helpful`,
         {
           method: "POST",
           headers: {
@@ -127,7 +126,7 @@ function SupplierReview({ supplierId, supplierName, onReviewAdded }) {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/reviews/${supplierId}/reviews/${reviewId}/flag`,
+        `${API_BASE_URL}/api/reviews/${supplierId}/reviews/${reviewId}/flag`,
         {
           method: "POST",
           headers: {
